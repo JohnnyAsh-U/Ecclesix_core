@@ -1,0 +1,5 @@
+export const LoginUrl = '/auth/login'
+export const LogoutUrl = '/auth/logout'
+export const MeUrl = '/auth/me'
+export const Verify2FAUrl = '/auth/verify-2fa'
+export const Setup2FAUrl = '/auth/2fa/setup'
