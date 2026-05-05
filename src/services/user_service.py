@@ -11,7 +11,7 @@ class UserService:
     def __init__(self, db: AsyncSession):
         self.db = db
 
-    async def create_user(self, username: str, password: str, email: str | None = None, role: Roles = Roles.Mod) -> Admin:
+    async def create_user(self, username: str, password: str, email: str | None = None, role: Roles = Roles.mod) -> Admin:
         # prevent duplicate username
         result = await self.db.execute(select(Admin).where(Admin.username == username))
         if result.scalars().first():
@@ -70,7 +70,7 @@ class UserService:
         return user
 
     async def list_users(self, only_active: bool | None = None) -> List[Admin]:
-        query = select(Admin).where(Admin.role != Roles.Admin)
+        query = select(Admin).where(Admin.role != Roles.admin)  # Exclude admin users from the list
         if only_active is not None:
             if only_active:
                 query = select(Admin).where(Admin.is_active == True)

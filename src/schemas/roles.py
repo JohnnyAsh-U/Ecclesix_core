@@ -1,4 +1,4 @@
 from src.database.models import Roles
 
-ADMIN = Roles.Admin
-MOD = Roles.Mod
+ADMIN = Roles.admin
+MOD = Roles.mod

@@ -1,8 +1,5 @@
 import {
   LayoutDashboard,
-  AudioWaveform,
-  Command,
-  GalleryVerticalEnd,
   Building2,
   CreditCard,
   HardDrive,
@@ -22,69 +19,52 @@ export const sidebarData = (): SidebarData => {
       email: useAuthStore().user?.email || '',
       avatar: '/avatars/shadcn.jpg',
     },
-    teams: [
-      {
-        name: 'Shadcn Admin',
-        logo: Command,
-        plan: 'Vite + ShadcnUI',
-      },
-      {
-        name: 'Acme Inc',
-        logo: GalleryVerticalEnd,
-        plan: 'Enterprise',
-      },
-      {
-        name: 'Acme Corp.',
-        logo: AudioWaveform,
-        plan: 'Startup',
-      },
-    ],
     navGroups: [
       {
-        title: 'General',
+        title: 'Général',
         items: [
           {
-            title: 'Dashboard',
+            title: 'Tableau de bord',
             url: '/dashboard',
             icon: LayoutDashboard,
           },
           {
-            title: 'Tenants',
+            title: 'Clients',
             url: '/tenants',
             icon: Building2,
           },
           {
-            title: 'Billing',
+            title: 'Facturation',
             url: '/billing',
             icon: CreditCard,
           },
           {
-            title: 'Backups',
+            title: 'Sauvegardes',
             url: '/backups',
             icon: HardDrive,
           },
           {
-            title: 'Storage',
+            title: 'Stockage',
             url: '/storage',
             icon: Database,
           },
           {
-            title: 'Support',
+            title: 'Assistance',
             url: '/support',
             icon: Mail,
           },
           {
-            title: 'Metrics',
+            title: 'Statistiques',
             url: '/metrics',
             icon: BarChart3,
           },
           {
-            title: 'Security',
+            title: 'Sécurité',
             url: '/security',
             icon: Shield,
           },
           {
-            title: 'Automation',
+            title: 'Automatisation',
             url: '/automation',
             icon: Zap,
           },

@@ -8,8 +8,8 @@ import enum
 
 
 class Roles(str, enum.Enum):
-    Admin = "Admin"
-    Mod = "Mod"
+    admin = "admin"
+    mod = "mod"
 
 class Admin(Base):
     __tablename__ = "users"
@@ -20,7 +20,7 @@ class Admin(Base):
     password = Column(String(100), nullable=False)
     is_2fa_enabled = Column(Boolean, nullable=False, default=False)
     totp_secret = Column(String(64), nullable=True)
-    role = Column(Enum(Roles), nullable=False, default=Roles.Mod)
+    role = Column(Enum(Roles), nullable=False, default=Roles.mod)
     is_active = Column(Boolean, nullable=False, default=True)
     last_login = Column(DateTime, nullable=True)
     created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
@@ -29,6 +29,7 @@ class Admin(Base):
     __table_args__ = (
         Index('idx_username', 'username', unique=True),
     )
+    
     
 class AuditLogs(Base):
     __tablename__ = "audits"

@@ -1,7 +1,12 @@
-import { Main } from '@/components/layout/main'
+/**
+ * Tenants Management Page
+ * Main page for viewing and managing all tenants
+ */
+
+import { useState } from 'react'
+import { TenantsTable } from './components/tenants-table'
 import { Button } from '@/components/ui/button'
 import type { Tenant } from '@/types'
-import { useState } from 'react'
 import { toast } from 'sonner'
 import {
   Dialog,
@@ -18,61 +23,48 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { TenantsTable } from './components/tenants-table'
 import { Textarea } from '@/components/ui/textarea'
-import { formatDistance } from 'date-fns/formatDistance'
-import { parseISO } from 'date-fns/parseISO'
+import { Main } from '@/components/layout/main'
 
-type Props = {}
+export function TenantsPage() {
+  const [selectedTenant, setSelectedTenant] = useState<Tenant | null>(null)
+  const [suspendDialogOpen, setSuspendDialogOpen] = useState(false)
+  const [planDialogOpen, setPlanDialogOpen] = useState(false)
+  const [suspendReason, setSuspendReason] = useState('')
+  const [newPlan, setNewPlan] = useState('')
 
-export function formatDateRelative(date: string | Date): string {
-  try {
-    const d = typeof date === 'string' ? parseISO(date) : date
-    return formatDistance(d, new Date(), { addSuffix: true })
-  } catch {
-    return 'Invalid date'
+  const handleSuspendTenant = (tenant: Tenant) => {
+    setSelectedTenant(tenant)
+    setSuspendDialogOpen(true)
   }
-}
 
-export default function Tenants({ }: Props) {
-   const [selectedTenant, setSelectedTenant] = useState<Tenant | null>(null)
-    const [suspendDialogOpen, setSuspendDialogOpen] = useState(false)
-    const [planDialogOpen, setPlanDialogOpen] = useState(false)
-    const [suspendReason, setSuspendReason] = useState('')
-    const [newPlan, setNewPlan] = useState('')
-  
-    const handleSuspendTenant = (tenant: Tenant) => {
-      setSelectedTenant(tenant)
-      setSuspendDialogOpen(true)
+  const handleConfirmSuspend = () => {
+    if (selectedTenant) {
+      toast.success(
+        `Tenant ${selectedTenant.name} ${selectedTenant.status === 'suspended' ? 'reactivated' : 'suspended'}`
+      )
+      setSuspendDialogOpen(false)
+      setSuspendReason('')
+      setSelectedTenant(null)
     }
-  
-    const handleConfirmSuspend = () => {
-      if (selectedTenant) {
-        toast.success(
-          `Tenant ${selectedTenant.name} ${selectedTenant.status === 'suspended' ? 'reactivated' : 'suspended'}`
-        )
-        setSuspendDialogOpen(false)
-        setSuspendReason('')
-        setSelectedTenant(null)
-      }
-    }
-  
-    const handleChangePlan = (tenant: Tenant) => {
-      setSelectedTenant(tenant)
-      setNewPlan(tenant.plan)
-      setPlanDialogOpen(true)
-    }
-  
-    const handleConfirmPlanChange = () => {
-      if (selectedTenant) {
-        toast.success(`Plan updated to ${newPlan}`)
-        setPlanDialogOpen(false)
-        setNewPlan('')
-        setSelectedTenant(null)
-      }
-    }
+  }
 
-      const handleImpersonate = (tenant: Tenant) => {
+  const handleChangePlan = (tenant: Tenant) => {
+    setSelectedTenant(tenant)
+    setNewPlan(tenant.plan)
+    setPlanDialogOpen(true)
+  }
+
+  const handleConfirmPlanChange = () => {
+    if (selectedTenant) {
+      toast.success(`Plan updated to ${newPlan}`)
+      setPlanDialogOpen(false)
+      setNewPlan('')
+      setSelectedTenant(null)
+    }
+  }
+
+  const handleImpersonate = (tenant: Tenant) => {
     toast.success(`Impersonating ${tenant.name}`)
     // In a real app, would redirect to tenant dashboard
   }
@@ -86,21 +78,21 @@ export default function Tenants({ }: Props) {
       toast.success(`Tenant ${tenant.name} deleted`)
     }
   }
+
   return (
-    <Main>
-      <div className='flex flex-wrap items-end justify-between gap-2 mb-4'>
+    <Main className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
         <div>
-          <h2 className='text-2xl font-bold tracking-tight'>Clients</h2>
-          <p className='text-muted-foreground'>
-            Gestion des Clients
+          <h1 className="text-3xl font-bold text-gray-900">Tenant Management</h1>
+          <p className="text-gray-600 mt-1">
+            Manage all church and organization tenants on the platform
           </p>
         </div>
-        <div className='flex items-center space-x-2'>
-          <Button>Ajouter Client</Button>
-        </div>
+        <Button>+ New Tenant</Button>
       </div>
 
-       {/* Tenants Table */}
+      {/* Tenants Table */}
       <TenantsTable
         onViewTenant={(t) => console.log('View tenant', t)}
         onSuspendTenant={handleSuspendTenant}

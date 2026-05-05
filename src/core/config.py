@@ -18,6 +18,14 @@ class Settings(BaseModel):
   APP_VERSION: str = "1.0.0"
   PROD: bool = False
 
+  # Django client integration
+  DJANGO_BASE_URL: str = "http://localhost:8000"
+  INTERNAL_API_SECRET_ADMIN: str
+  INTERNAL_API_SECRET_MOD: str
+  DJANGO_REQUEST_TIMEOUT: int = 10  # seconds
+  DJANGO_RETRY_MAX_ATTEMPTS: int = 3
+  DJANGO_RETRY_DELAY: float = 1.0  # seconds
+
   class Config:
     env_file = ".env"
 
@@ -30,4 +38,10 @@ def get_settings() -> Settings:
         ALLOWED_HOSTS=os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1").split(","),
         PROD=os.getenv("PROD", "false").lower() == "true",
         REDIS_URL=os.getenv("REDIS_URL", "redis://localhost:6379/0"),
+        DJANGO_BASE_URL=os.getenv("DJANGO_BASE_URL", "http://localhost:8000"),
+        INTERNAL_API_SECRET_ADMIN=os.getenv("INTERNAL_API_SECRET_ADMIN", "admin-secret-key"),
+        INTERNAL_API_SECRET_MOD=os.getenv("INTERNAL_API_SECRET_MOD", "mod-secret-key"),
+        DJANGO_REQUEST_TIMEOUT=int(os.getenv("DJANGO_REQUEST_TIMEOUT", "10")),
+        DJANGO_RETRY_MAX_ATTEMPTS=int(os.getenv("DJANGO_RETRY_MAX_ATTEMPTS", "3")),
+        DJANGO_RETRY_DELAY=float(os.getenv("DJANGO_RETRY_DELAY", "1.0")),
     )

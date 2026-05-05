@@ -2,6 +2,7 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from typing import AsyncGenerator, Optional
 from sqlalchemy.ext.asyncio import AsyncSession
+from src.core.django_client import DjangoClient
 from src.database.models import Admin
 from src.core.security import security_manager
 from src.database.session import AsyncSessionLocal
@@ -64,6 +65,14 @@ def require_roles(*roles: str):
         return user
 
     return role_checker
+
+
+def get_django_client() -> DjangoClient:
+    """Get the singleton Django client instance."""
+    instance = DjangoClient()
+    if instance._client is None:
+        raise RuntimeError("Django client not initialized. Call connect() during startup.")
+    return instance
 
 
 

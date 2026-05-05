@@ -1,7 +1,7 @@
 # Backend developed by John Ashimedua; https://github.com/JohnnyAsh-U
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from typing import List
+from typing import List, AsyncGenerator
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -9,6 +9,8 @@ from fastapi.staticfiles import StaticFiles
 from src.core.config import get_settings
 from src.database.session import engine, Base
 from src.routers import api_router
+from src.routers.internal import internal_router
+from src.core.django_client import DjangoClient
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
@@ -45,12 +47,20 @@ async def lifespan(app: FastAPI):
     """Handle startup and shutdown events."""
     # Startup
     await init_db()
+    
+    # Initialize Django client
+    django_client = DjangoClient.initialize(settings)
+    await django_client.connect()
+    logging.info("Django client initialized and connected")
         
     scheduler.start()
     print("Scheduler started")
     
     yield 
     
+    # Shutdown
+    await django_client.disconnect()
+    logging.info("Django client disconnected")
     
     scheduler.shutdown()
     print("Scheduler shut down")
@@ -93,6 +103,7 @@ app.add_middleware(
 # app.mount("/api/v1/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 app.include_router(api_router, prefix="/api/v1")
+app.include_router(internal_router, prefix="/api/v1")
 
 
 @app.exception_handler(Exception)

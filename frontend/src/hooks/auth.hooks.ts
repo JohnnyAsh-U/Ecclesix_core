@@ -2,6 +2,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { authService } from '@/services/auth.service'
 import { useAuthStore } from '@/stores/auth.store'
+import { useNavigate } from '@tanstack/react-router'
 
 // ---- Bootstrap: who am I? ----
 export const useMeQuery = () => {
@@ -90,12 +91,18 @@ export const useDisable2FAMutation = () => {
 export const useLogoutMutation = () => {
   const { clearAuth } = useAuthStore()
   const queryClient = useQueryClient()
+    const navigate = useNavigate()
+  
 
   return useMutation({
     mutationFn: authService.logout,
     onSettled: () => {
       clearAuth()                              // clear zustand + localStorage
       queryClient.clear()                   // wipe all cached queries
+      navigate({
+        to: '/login',
+        replace: true,
+      })
     },
   })
 }

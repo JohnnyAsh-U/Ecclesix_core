@@ -2,7 +2,6 @@
 // import { useAuthStore } from '@/stores/auth-store'
 import { ConfirmDialog } from '@/components/confirm-dialog'
 import { useLogoutMutation } from '@/hooks/auth.hooks'
-import { useNavigate } from '@tanstack/react-router'
 import { toast } from 'sonner'
 
 interface SignOutDialogProps {
@@ -11,16 +10,11 @@ interface SignOutDialogProps {
 }
 
 export function SignOutDialog({ open, onOpenChange }: SignOutDialogProps) {
-  const navigate = useNavigate()
   // const location = useLocation()
   const { mutateAsync: logout } = useLogoutMutation()
 
   const handleSignOut = () => {
     logout()
-    navigate({
-      to: '/login',
-      replace: true,
-    })
     toast.success("Deconnexion avec succes")
   }
 
