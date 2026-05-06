@@ -32,6 +32,7 @@ TENANTS_DETAIL = "/api/v1/internal/tenants/{tenant_id}"
 TENANTS_ACTIVATE = "/api/v1/internal/tenants/{tenant_id}/activate"
 TENANTS_DEACTIVATE = "/api/v1/internal/tenants/{tenant_id}/deactivate"
 TENANTS_DOMAINS = "/api/v1/internal/tenants/{tenant_id}/domains"
+TENANTS_STORAGE = "/api/v1/internal/tenants/{tenant_id}/storage"
 
 # ============================================================================
 # Billing Endpoints

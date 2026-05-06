@@ -16,6 +16,7 @@ from src.core.internal_urls import (
     TENANTS_ACTIVATE,
     TENANTS_DEACTIVATE,
     TENANTS_DOMAINS,
+    TENANTS_STORAGE,
 )
 from src.schemas.roles import ADMIN, MOD
 
@@ -59,6 +60,17 @@ async def get_tenant_detail(
     return await client.get(TENANTS_DETAIL.format(tenant_id=tenant_id), role=user.role)
 
 
+@tenants_router.put("/{tenant_id}")
+async def get_tenant_detail(
+    tenant_id: int,
+    data: Dict[str, Any],
+    client: DjangoClient = Depends(get_django_client),
+    user: User = Depends(require_roles(ADMIN, MOD)),
+) -> Dict[str, Any]:
+    """Get tenant details from Django."""
+    return await client.put(TENANTS_DETAIL.format(tenant_id=tenant_id), role=user.role, json=data)
+
+
 @tenants_router.post("/{tenant_id}/activate")
 async def activate_tenant(
     tenant_id: int,
@@ -89,7 +101,7 @@ async def get_tenant_domains(
     return await client.get(TENANTS_DOMAINS.format(tenant_id=tenant_id), role=user.role)
 
 
-@tenants_router.post("/{tenant_id}/domains")
+@tenants_router.patch("/{tenant_id}/domains")
 async def add_tenant_domain(
     tenant_id: int,
     domain_data: Dict[str, Any],
@@ -97,15 +109,17 @@ async def add_tenant_domain(
     user: User = Depends(require_roles(ADMIN, MOD)),
 ) -> Dict[str, Any]:
     """Add a domain to a tenant via Django internal API."""
-    return await client.post(TENANTS_DOMAINS.format(tenant_id=tenant_id), role=user.role, json=domain_data)
+    return await client.patch(TENANTS_DOMAINS.format(tenant_id=tenant_id), role=user.role, json=domain_data)
 
 
-@tenants_router.delete("/{tenant_id}/domains")
-async def remove_tenant_domain(
+
+
+@tenants_router.patch("/{tenant_id}/storage")
+async def update_tenant_storage(
     tenant_id: int,
-    domain_data: Dict[str, Any],
+    storage_data: Dict[str, Any],
     client: DjangoClient = Depends(get_django_client),
     user: User = Depends(require_roles(ADMIN, MOD)),
 ) -> Dict[str, Any]:
-    """Remove a domain from a tenant via Django internal API."""
-    return await client.delete(TENANTS_DOMAINS.format(tenant_id=tenant_id), role=user.role, json=domain_data)
+    """Update storage quota for a tenant via Django internal API."""
+    return await client.patch(TENANTS_STORAGE.format(tenant_id=tenant_id), role=user.role, json=storage_data)

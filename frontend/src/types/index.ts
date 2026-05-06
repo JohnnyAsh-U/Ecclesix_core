@@ -8,22 +8,36 @@
 // ============================================================================
 
 export type TenantStatus = 'active' | 'suspended' | 'trial' | 'archived'
-export type TenantPlan = 'starter' | 'professional' | 'enterprise' | 'custom'
+export type TenantPlan = 'Starter' | 'Professional' | 'Enterprise' | 'Custom' | string
+
+export interface TenantStorage {
+  quota_bytes: number
+  used_bytes: number
+  percent: number
+}
 
 export interface Tenant {
-  id: string
-  name: string
-  email: string
-  domain: string
-  subdomain: string
-  status: TenantStatus
-  plan: TenantPlan
-  usersCount: number
-  storageUsedGB: number
-  storageQuotaGB: number
-  lastLoginAt: string | null
-  createdAt: string
-  updatedAt: string
+  id: number
+  church_name: string
+  domains: string[]
+  plan: TenantPlan | null
+  is_active: boolean
+  church_count: number
+  member_count: number
+  storage?: TenantStorage
+  name?: string
+  email?: string
+  domain?: string
+  custom_logo: boolean
+  phone:string
+  subdomain?: string
+  status?: TenantStatus
+  usersCount?: number
+  storageUsedGB?: number
+  storageQuotaGB?: number
+  lastLoginAt?: string | null
+  createdAt?: string
+  updatedAt?: string
   suspendedAt?: string | null
   suspendedReason?: string | null
 }
@@ -52,6 +66,23 @@ export interface TenantMetrics {
   errorRate: number
   avgResponseTime: number
   lastUpdated: string
+}
+
+
+
+// -----------------------------------------------------------
+// Billing Plan
+
+export interface BillingPlan {
+  id: number,
+  code: string,
+  name: string,
+  price: string,
+  currency: string,
+  max_churches: number,
+  max_members: number,
+  created_at : string,
+  updated_at: string
 }
 
 // ============================================================================
@@ -372,12 +403,12 @@ export type ActivityType =
   | 'backup_completed'
   | 'backup_failed'
   | 'admin_login'
-  | 'invoice_issued'
-  | 'invoice_paid'
-  | 'user_added'
-  | 'user_removed'
-  | 'plan_upgraded'
-  | 'plan_downgraded'
+  // | 'invoice_issued'CreateTenantPayload
+  // | 'invoice_paid'
+  // | 'user_added'
+  // | 'user_removed'
+  // | 'plan_upgraded'
+  // | 'plan_downgraded'
 
 export interface ActivityFeedItem {
   id: string

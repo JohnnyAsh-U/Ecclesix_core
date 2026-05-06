@@ -9,7 +9,7 @@ class TenantCreate(BaseModel):
     domain: NonEmptyStr
     superadmin_email: EmailStr
     schema_name: Optional[NonEmptyStr] = None
-    plan_code: Optional[str] = None
+    plan: Optional[str] = None
     billing_cycle: Optional[str] = "monthly"
     email: Optional[EmailStr] = None
     phone: Optional[str] = None
