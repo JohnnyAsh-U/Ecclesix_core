@@ -66,7 +66,6 @@ export function CreateTenantForm({
       schema_name: values.schema_name || values.domain.replace(/\./g, '_').toLowerCase(),
       plan: values.plan,
     }
-
     try {
       await createMutation.mutateAsync(payload)
       reset()

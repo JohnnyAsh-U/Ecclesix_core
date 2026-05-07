@@ -10,6 +10,10 @@ const badgeVariants = cva(
     variants: {
       variant: {
         default: "bg-primary text-primary-foreground [a&]:hover:bg-primary/90",
+        paid: "bg-green-50 text-green-700 border-green-200",
+        pending: "bg-yellow-50 text-yellow-700 border-yellow-200",
+        refunded: "bg-gray-50 text-gray-700 border-gray-200",
+        failed: "bg-red-50 text-red-700 border-red-200",
         secondary:
           "bg-secondary text-secondary-foreground [a&]:hover:bg-secondary/90",
         destructive:

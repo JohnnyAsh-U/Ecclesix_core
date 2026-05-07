@@ -8,7 +8,8 @@ import { BillingPlanUrl, DetailBillingPlanUrl } from '@/utils/constant'
 export interface CreatePlan {
     code: string,
     name: string,
-    price: string,
+    price: string | number,
+    annual_price: string | number,
     currency: string,
     max_churches: number,
     max_members: number,

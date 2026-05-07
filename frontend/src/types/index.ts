@@ -78,6 +78,7 @@ export interface BillingPlan {
   code: string,
   name: string,
   price: string,
+  annual_price: string,
   currency: string,
   max_churches: number,
   max_members: number,

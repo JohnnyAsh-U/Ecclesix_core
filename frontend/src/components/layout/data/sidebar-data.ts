@@ -35,7 +35,7 @@ export const sidebarData = (): SidebarData => {
           },
           {
             title: 'Facturation',
-            url: '/billing',
+            url: '/billings',
             icon: CreditCard,
           },
           {

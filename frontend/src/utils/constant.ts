@@ -17,3 +17,11 @@ export const UpdateStorageUrl = (id: number) => `${TenantUrl}/${id}/storage`
 // Billing Endpint Url
 export const BillingPlanUrl = "/plans"
 export const DetailBillingPlanUrl = (id: number) =>`${BillingPlanUrl}/${id}`
+
+// Internal Billing Endpoints
+export const BillingUrl = "/billings"
+export const BillingRecentUrl = `${BillingUrl}/recent`
+export const BillingStatsUrl = `${BillingUrl}/stats`
+export const BillingFilterUrl = `${BillingUrl}/filter`
+export const BillingCreateUrl = `${BillingUrl}/create`
+export const BillingChangePlanUrl = `${BillingUrl}/change-plan`

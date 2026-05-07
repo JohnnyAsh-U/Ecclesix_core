@@ -39,8 +39,9 @@ TENANTS_STORAGE = "/api/v1/internal/tenants/{tenant_id}/storage"
 # ============================================================================
 BILLINGS_RECENT = "/api/v1/internal/billings/recent"
 BILLINGS_FILTER = "/api/v1/internal/billings/filter"
+BILLINGS_STATS = "/api/v1/internal/billings/stats"
 BILLINGS_CREATE = "/api/v1/internal/billings/create"
-BILLINGS_CANCEL = "/api/v1/internal/billings/{payment_id}/cancel"
+BILLINGS_CHANGE_PLAN = "/api/v1/internal/billings/change-plan"
 
 # ============================================================================
 # Plans Endpoints

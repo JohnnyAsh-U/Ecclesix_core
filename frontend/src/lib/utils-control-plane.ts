@@ -54,23 +54,26 @@ export function formatTime(date: string | Date, formatStr: string = 'HH:mm:ss'):
 
 export function getStatusBadgeVariant(
   status: string
-): 'default' | 'secondary' | 'destructive' | 'outline' {
+): 'default' | 'secondary' | 'destructive' | 'outline'| 'paid' | 'refunded' | 'pending' | 'failed' {
   switch (status.toLowerCase()) {
     case 'active':
-    case 'paid':
     case 'completed':
     case 'success':
       return 'default'
+    case 'paid':
+      return 'paid'
     case 'pending':
     case 'assigned':
     case 'in_progress':
-      return 'secondary'
+      return 'pending'
+    case 'refunded':
+      return 'refunded'
     case 'suspended':
     case 'failed':
     case 'archived':
     case 'cancelled':
     case 'overdue':
-      return 'destructive'
+      return 'failed'
     default:
       return 'outline'
   }

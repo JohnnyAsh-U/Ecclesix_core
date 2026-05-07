@@ -22,6 +22,7 @@ import { Route as AuthenticatedTenantsIndexRouteImport } from './routes/_authent
 import { Route as AuthenticatedSettingsIndexRouteImport } from './routes/_authenticated/settings/index'
 import { Route as AuthenticatedProfilIndexRouteImport } from './routes/_authenticated/profil/index'
 import { Route as AuthenticatedDashboardIndexRouteImport } from './routes/_authenticated/dashboard/index'
+import { Route as AuthenticatedBillingsIndexRouteImport } from './routes/_authenticated/billings/index'
 
 const UnauthenticatedRouteRoute = UnauthenticatedRouteRouteImport.update({
   id: '/_unauthenticated',
@@ -90,6 +91,12 @@ const AuthenticatedDashboardIndexRoute =
     path: '/dashboard/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedBillingsIndexRoute =
+  AuthenticatedBillingsIndexRouteImport.update({
+    id: '/billings/',
+    path: '/billings/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -99,6 +106,7 @@ export interface FileRoutesByFullPath {
   '/500': typeof errors500Route
   '/503': typeof errors503Route
   '/login': typeof UnauthenticatedLoginRoute
+  '/billings/': typeof AuthenticatedBillingsIndexRoute
   '/dashboard/': typeof AuthenticatedDashboardIndexRoute
   '/profil/': typeof AuthenticatedProfilIndexRoute
   '/settings/': typeof AuthenticatedSettingsIndexRoute
@@ -112,6 +120,7 @@ export interface FileRoutesByTo {
   '/500': typeof errors500Route
   '/503': typeof errors503Route
   '/login': typeof UnauthenticatedLoginRoute
+  '/billings': typeof AuthenticatedBillingsIndexRoute
   '/dashboard': typeof AuthenticatedDashboardIndexRoute
   '/profil': typeof AuthenticatedProfilIndexRoute
   '/settings': typeof AuthenticatedSettingsIndexRoute
@@ -128,6 +137,7 @@ export interface FileRoutesById {
   '/(errors)/500': typeof errors500Route
   '/(errors)/503': typeof errors503Route
   '/_unauthenticated/login': typeof UnauthenticatedLoginRoute
+  '/_authenticated/billings/': typeof AuthenticatedBillingsIndexRoute
   '/_authenticated/dashboard/': typeof AuthenticatedDashboardIndexRoute
   '/_authenticated/profil/': typeof AuthenticatedProfilIndexRoute
   '/_authenticated/settings/': typeof AuthenticatedSettingsIndexRoute
@@ -143,6 +153,7 @@ export interface FileRouteTypes {
     | '/500'
     | '/503'
     | '/login'
+    | '/billings/'
     | '/dashboard/'
     | '/profil/'
     | '/settings/'
@@ -156,6 +167,7 @@ export interface FileRouteTypes {
     | '/500'
     | '/503'
     | '/login'
+    | '/billings'
     | '/dashboard'
     | '/profil'
     | '/settings'
@@ -171,6 +183,7 @@ export interface FileRouteTypes {
     | '/(errors)/500'
     | '/(errors)/503'
     | '/_unauthenticated/login'
+    | '/_authenticated/billings/'
     | '/_authenticated/dashboard/'
     | '/_authenticated/profil/'
     | '/_authenticated/settings/'
@@ -281,10 +294,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/billings/': {
+      id: '/_authenticated/billings/'
+      path: '/billings'
+      fullPath: '/billings/'
+      preLoaderRoute: typeof AuthenticatedBillingsIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedBillingsIndexRoute: typeof AuthenticatedBillingsIndexRoute
   AuthenticatedDashboardIndexRoute: typeof AuthenticatedDashboardIndexRoute
   AuthenticatedProfilIndexRoute: typeof AuthenticatedProfilIndexRoute
   AuthenticatedSettingsIndexRoute: typeof AuthenticatedSettingsIndexRoute
@@ -292,6 +313,7 @@ interface AuthenticatedRouteRouteChildren {
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedBillingsIndexRoute: AuthenticatedBillingsIndexRoute,
   AuthenticatedDashboardIndexRoute: AuthenticatedDashboardIndexRoute,
   AuthenticatedProfilIndexRoute: AuthenticatedProfilIndexRoute,
   AuthenticatedSettingsIndexRoute: AuthenticatedSettingsIndexRoute,
