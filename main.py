@@ -1,13 +1,18 @@
 # Backend developed by John Ashimedua; https://github.com/JohnnyAsh-U
 
+from contextlib import asynccontextmanager
+
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from typing import List, AsyncGenerator
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
+from sqlalchemy import select
+from src.scheduler.backup_scheduler import bootstrap_all_backup_jobs
 from src.core.config import get_settings
-from src.database.session import engine, Base
+from src.database.session import AsyncSessionLocal, AsyncSessionLocal, engine, Base
+from src.database.models import TenantBackupConfig
 from src.routers import api_router
 from src.routers.internal import internal_router
 from src.core.django_client import DjangoClient
@@ -18,6 +23,7 @@ from slowapi.util import get_remote_address
 from prometheus_fastapi_instrumentator import Instrumentator
 import logging
 from src.core.redis_client import redis_client
+from uuid import uuid4
 import asyncio
 
 settings = get_settings()
@@ -42,16 +48,46 @@ async def init_db():
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
 
+# Async function to initialize full backup config
+async def init_full_backup_config():
+    """Ensure __full__ backup config exists with default settings."""
+    async with AsyncSessionLocal() as db:
+        # Check if __full__ config exists
+        result = await db.execute(
+            select(TenantBackupConfig).where(TenantBackupConfig.tenant_schema == "__full__")
+        )
+        config = result.scalars().first()
+        
+        if not config:
+            # Create __full__ backup config with defaults
+            config = TenantBackupConfig(
+                id=uuid4(),
+                tenant_name="DB Full Backup",
+                tenant_schema="__full__",
+                enabled=True,
+                retention_days=30
+            )
+            db.add(config)
+            await db.commit()
+            logging.info("Created default __full__ backup config with retention_days=30 and enabled=True")
+        else:
+            logging.info("__full__ backup config already exists")
+
 # Event handler for startup
+@asynccontextmanager
 async def lifespan(app: FastAPI):
     """Handle startup and shutdown events."""
     # Startup
     await init_db()
+    await init_full_backup_config()
     
     # Initialize Django client
     django_client = DjangoClient.initialize(settings)
     await django_client.connect()
     logging.info("Django client initialized and connected")
+    
+    async with AsyncSessionLocal() as db:
+        await bootstrap_all_backup_jobs(db)
         
     scheduler.start()
     print("Scheduler started")

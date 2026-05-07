@@ -31,6 +31,46 @@ class Admin(Base):
     )
     
     
+    
+    
+class BackupStatus(str, enum.Enum):
+    pending = "pending"
+    running = "running"
+    success = "success"
+    failed = "failed"
+    
+class BackupType(str, enum.Enum):
+    full = "full"
+    schema = "schema"
+    
+    
+class BackupJob(Base):
+    __tablename__ = "backup_jobs"
+    
+    id = Column(UUID, primary_key=True, index=True)
+    tenant_schema = Column(String(100), nullable=False)
+    status = Column(Enum(BackupStatus), nullable=False, default=BackupStatus.pending)
+    backup_type = Column(Enum(BackupType), default=BackupType.schema, nullable=False)
+    storage_path = Column(String(255), nullable=True)
+    size_bytes = Column(Integer, nullable=True)
+    error_message = Column(String(255), nullable=True)
+    started_at = Column(DateTime, nullable=True)
+    completed_at = Column(DateTime, nullable=True)
+    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+    
+
+class TenantBackupConfig(Base):
+    __tablename__ = "tenant_backup_configs"
+    
+    id = Column(UUID, primary_key=True, index=True)
+    tenant_name = Column(String(100), nullable=False)
+    tenant_schema = Column(String(100), nullable=False, unique=True)
+    enabled = Column(Boolean, nullable=False, default=True)
+    retention_days = Column(Integer, nullable=False, default=30)
+    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)  
+    updated_at = Column(DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)  
+    
+    
 class AuditLogs(Base):
     __tablename__ = "audits"
     

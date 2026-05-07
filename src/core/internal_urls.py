@@ -3,18 +3,6 @@ Django internal API URL constants.
 Centralized URL definitions for all Django proxy endpoints.
 """
 
-# ============================================================================
-# Stats Endpoints
-# ============================================================================
-STATS_REQUESTS_HOURLY = "/api/v1/internal/stats/requests/hourly"
-STATS_REQUESTS_DAILY = "/api/v1/internal/stats/requests/daily"
-STATS_REQUESTS_TENANTS_HOURLY = "/api/v1/internal/stats/requests/tenants-hourly"
-STATS_REQUESTS_TENANTS_DAILY = "/api/v1/internal/stats/requests/tenants-daily"
-STATS_REQUESTS_SUMMARY = "/api/v1/internal/stats/requests/summary"
-STATS_CPU = "/api/v1/internal/stats/cpu"
-STATS_MEMORY = "/api/v1/internal/stats/memory"
-STATS_DISK = "/api/v1/internal/stats/disk"
-STATS_API_LATENCY = "/api/v1/internal/stats/api-latency"
 
 # ============================================================================
 # Migrations Endpoints

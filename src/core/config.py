@@ -25,6 +25,30 @@ class Settings(BaseModel):
   DJANGO_REQUEST_TIMEOUT: int = 10  # seconds
   DJANGO_RETRY_MAX_ATTEMPTS: int = 3
   DJANGO_RETRY_DELAY: float = 1.0  # seconds
+  
+  
+  # Prometheus url
+  PROMETHEUS_URL : str = "http://localhost:9090"
+  
+  # OBJECT STORAGE
+  S3_ENDPOINT_URL: str 
+  S3_ACCESS_KEY: str 
+  S3_SECRET_KEY: str 
+  S3_REGION: str 
+  S3_BUCKET_NAME: str
+  
+  
+  
+  # Backup windows minutes
+  BACKUP_WINDOW_MINUTES: int = 60
+  BACKUP_CONCURRENCY_LIMIT: int = 3
+  
+  # Backup DB CREDENTIALS
+  BACKUP_DB_HOST: str 
+  BACKUP_DB_PORT: int
+  BACKUP_DB_USER: str
+  BACKUP_DB_PASSWORD: str
+  BACKUP_DB_NAME: str
 
   class Config:
     env_file = ".env"
@@ -44,4 +68,16 @@ def get_settings() -> Settings:
         DJANGO_REQUEST_TIMEOUT=int(os.getenv("DJANGO_REQUEST_TIMEOUT", "10")),
         DJANGO_RETRY_MAX_ATTEMPTS=int(os.getenv("DJANGO_RETRY_MAX_ATTEMPTS", "3")),
         DJANGO_RETRY_DELAY=float(os.getenv("DJANGO_RETRY_DELAY", "1.0")),
+        PROMETHEUS_URL=os.getenv("PROMETHEUS_URL", "http://localhost:9090"),
+        S3_ENDPOINT_URL=os.getenv("S3_ENDPOINT_URL", "http://localhost:9000"),
+        S3_ACCESS_KEY=os.getenv("S3_ACCESS_KEY", "your-s3-access-key"),
+        S3_SECRET_KEY=os.getenv("S3_SECRET_KEY", "your-s3-secret-key"),
+        S3_REGION=os.getenv("S3_REGION", "us-east-1"),
+        S3_BUCKET_NAME=os.getenv("S3_BUCKET_NAME", "your-s3-bucket-name"),
+        
+        BACKUP_DB_HOST=os.getenv("BACKUP_DB_HOST", "localhost"),
+        BACKUP_DB_PORT=int(os.getenv("BACKUP_DB_PORT", "5432")),
+        BACKUP_DB_USER=os.getenv("BACKUP_DB_USER", "backup_user"),
+        BACKUP_DB_PASSWORD=os.getenv("BACKUP_DB_PASSWORD", "backup_password"),
+        BACKUP_DB_NAME=os.getenv("BACKUP_DB_NAME", "backup_db"),
     )

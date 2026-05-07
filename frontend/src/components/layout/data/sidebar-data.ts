@@ -7,7 +7,6 @@ import {
   Mail,
   BarChart3,
   Shield,
-  Zap,
   DatabaseIcon,
 } from 'lucide-react'
 import { type SidebarData } from '../types'
@@ -65,14 +64,9 @@ export const sidebarData = (): SidebarData => {
             icon: BarChart3,
           },
           {
-            title: 'Sécurité',
-            url: '/security',
+            title: 'Administrateurs',
+            url: '/admins',
             icon: Shield,
-          },
-          {
-            title: 'Automatisation',
-            url: '/automation',
-            icon: Zap,
           },
         ],
       },

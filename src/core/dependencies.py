@@ -87,3 +87,10 @@ def get_user_service(db: AsyncSession = Depends(get_db)):
     from src.services.user_service import UserService
 
     return UserService(db)
+
+
+def get_backup_service(db: AsyncSession = Depends(get_db)):
+    """Dependency provider for BackupService instances."""
+    from src.services.backup_service import BackupService
+
+    return BackupService(db)

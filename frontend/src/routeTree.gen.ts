@@ -19,12 +19,16 @@ import { Route as errors404RouteImport } from './routes/(errors)/404'
 import { Route as errors403RouteImport } from './routes/(errors)/403'
 import { Route as errors401RouteImport } from './routes/(errors)/401'
 import { Route as AuthenticatedTenantsIndexRouteImport } from './routes/_authenticated/tenants/index'
+import { Route as AuthenticatedSupportIndexRouteImport } from './routes/_authenticated/support/index'
 import { Route as AuthenticatedStorageIndexRouteImport } from './routes/_authenticated/storage/index'
 import { Route as AuthenticatedSettingsIndexRouteImport } from './routes/_authenticated/settings/index'
 import { Route as AuthenticatedProfilIndexRouteImport } from './routes/_authenticated/profil/index'
 import { Route as AuthenticatedMigrationsIndexRouteImport } from './routes/_authenticated/migrations/index'
+import { Route as AuthenticatedMetricsIndexRouteImport } from './routes/_authenticated/metrics/index'
 import { Route as AuthenticatedDashboardIndexRouteImport } from './routes/_authenticated/dashboard/index'
 import { Route as AuthenticatedBillingsIndexRouteImport } from './routes/_authenticated/billings/index'
+import { Route as AuthenticatedBackupsIndexRouteImport } from './routes/_authenticated/backups/index'
+import { Route as AuthenticatedAdminsIndexRouteImport } from './routes/_authenticated/admins/index'
 
 const UnauthenticatedRouteRoute = UnauthenticatedRouteRouteImport.update({
   id: '/_unauthenticated',
@@ -75,6 +79,12 @@ const AuthenticatedTenantsIndexRoute =
     path: '/tenants/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedSupportIndexRoute =
+  AuthenticatedSupportIndexRouteImport.update({
+    id: '/support/',
+    path: '/support/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedStorageIndexRoute =
   AuthenticatedStorageIndexRouteImport.update({
     id: '/storage/',
@@ -99,6 +109,12 @@ const AuthenticatedMigrationsIndexRoute =
     path: '/migrations/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedMetricsIndexRoute =
+  AuthenticatedMetricsIndexRouteImport.update({
+    id: '/metrics/',
+    path: '/metrics/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedDashboardIndexRoute =
   AuthenticatedDashboardIndexRouteImport.update({
     id: '/dashboard/',
@@ -111,6 +127,18 @@ const AuthenticatedBillingsIndexRoute =
     path: '/billings/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedBackupsIndexRoute =
+  AuthenticatedBackupsIndexRouteImport.update({
+    id: '/backups/',
+    path: '/backups/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedAdminsIndexRoute =
+  AuthenticatedAdminsIndexRouteImport.update({
+    id: '/admins/',
+    path: '/admins/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -120,12 +148,16 @@ export interface FileRoutesByFullPath {
   '/500': typeof errors500Route
   '/503': typeof errors503Route
   '/login': typeof UnauthenticatedLoginRoute
+  '/admins/': typeof AuthenticatedAdminsIndexRoute
+  '/backups/': typeof AuthenticatedBackupsIndexRoute
   '/billings/': typeof AuthenticatedBillingsIndexRoute
   '/dashboard/': typeof AuthenticatedDashboardIndexRoute
+  '/metrics/': typeof AuthenticatedMetricsIndexRoute
   '/migrations/': typeof AuthenticatedMigrationsIndexRoute
   '/profil/': typeof AuthenticatedProfilIndexRoute
   '/settings/': typeof AuthenticatedSettingsIndexRoute
   '/storage/': typeof AuthenticatedStorageIndexRoute
+  '/support/': typeof AuthenticatedSupportIndexRoute
   '/tenants/': typeof AuthenticatedTenantsIndexRoute
 }
 export interface FileRoutesByTo {
@@ -136,12 +168,16 @@ export interface FileRoutesByTo {
   '/500': typeof errors500Route
   '/503': typeof errors503Route
   '/login': typeof UnauthenticatedLoginRoute
+  '/admins': typeof AuthenticatedAdminsIndexRoute
+  '/backups': typeof AuthenticatedBackupsIndexRoute
   '/billings': typeof AuthenticatedBillingsIndexRoute
   '/dashboard': typeof AuthenticatedDashboardIndexRoute
+  '/metrics': typeof AuthenticatedMetricsIndexRoute
   '/migrations': typeof AuthenticatedMigrationsIndexRoute
   '/profil': typeof AuthenticatedProfilIndexRoute
   '/settings': typeof AuthenticatedSettingsIndexRoute
   '/storage': typeof AuthenticatedStorageIndexRoute
+  '/support': typeof AuthenticatedSupportIndexRoute
   '/tenants': typeof AuthenticatedTenantsIndexRoute
 }
 export interface FileRoutesById {
@@ -155,12 +191,16 @@ export interface FileRoutesById {
   '/(errors)/500': typeof errors500Route
   '/(errors)/503': typeof errors503Route
   '/_unauthenticated/login': typeof UnauthenticatedLoginRoute
+  '/_authenticated/admins/': typeof AuthenticatedAdminsIndexRoute
+  '/_authenticated/backups/': typeof AuthenticatedBackupsIndexRoute
   '/_authenticated/billings/': typeof AuthenticatedBillingsIndexRoute
   '/_authenticated/dashboard/': typeof AuthenticatedDashboardIndexRoute
+  '/_authenticated/metrics/': typeof AuthenticatedMetricsIndexRoute
   '/_authenticated/migrations/': typeof AuthenticatedMigrationsIndexRoute
   '/_authenticated/profil/': typeof AuthenticatedProfilIndexRoute
   '/_authenticated/settings/': typeof AuthenticatedSettingsIndexRoute
   '/_authenticated/storage/': typeof AuthenticatedStorageIndexRoute
+  '/_authenticated/support/': typeof AuthenticatedSupportIndexRoute
   '/_authenticated/tenants/': typeof AuthenticatedTenantsIndexRoute
 }
 export interface FileRouteTypes {
@@ -173,12 +213,16 @@ export interface FileRouteTypes {
     | '/500'
     | '/503'
     | '/login'
+    | '/admins/'
+    | '/backups/'
     | '/billings/'
     | '/dashboard/'
+    | '/metrics/'
     | '/migrations/'
     | '/profil/'
     | '/settings/'
     | '/storage/'
+    | '/support/'
     | '/tenants/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -189,12 +233,16 @@ export interface FileRouteTypes {
     | '/500'
     | '/503'
     | '/login'
+    | '/admins'
+    | '/backups'
     | '/billings'
     | '/dashboard'
+    | '/metrics'
     | '/migrations'
     | '/profil'
     | '/settings'
     | '/storage'
+    | '/support'
     | '/tenants'
   id:
     | '__root__'
@@ -207,12 +255,16 @@ export interface FileRouteTypes {
     | '/(errors)/500'
     | '/(errors)/503'
     | '/_unauthenticated/login'
+    | '/_authenticated/admins/'
+    | '/_authenticated/backups/'
     | '/_authenticated/billings/'
     | '/_authenticated/dashboard/'
+    | '/_authenticated/metrics/'
     | '/_authenticated/migrations/'
     | '/_authenticated/profil/'
     | '/_authenticated/settings/'
     | '/_authenticated/storage/'
+    | '/_authenticated/support/'
     | '/_authenticated/tenants/'
   fileRoutesById: FileRoutesById
 }
@@ -299,6 +351,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedTenantsIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/support/': {
+      id: '/_authenticated/support/'
+      path: '/support'
+      fullPath: '/support/'
+      preLoaderRoute: typeof AuthenticatedSupportIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/storage/': {
       id: '/_authenticated/storage/'
       path: '/storage'
@@ -327,6 +386,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedMigrationsIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/metrics/': {
+      id: '/_authenticated/metrics/'
+      path: '/metrics'
+      fullPath: '/metrics/'
+      preLoaderRoute: typeof AuthenticatedMetricsIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/dashboard/': {
       id: '/_authenticated/dashboard/'
       path: '/dashboard'
@@ -341,26 +407,48 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedBillingsIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/backups/': {
+      id: '/_authenticated/backups/'
+      path: '/backups'
+      fullPath: '/backups/'
+      preLoaderRoute: typeof AuthenticatedBackupsIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/admins/': {
+      id: '/_authenticated/admins/'
+      path: '/admins'
+      fullPath: '/admins/'
+      preLoaderRoute: typeof AuthenticatedAdminsIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAdminsIndexRoute: typeof AuthenticatedAdminsIndexRoute
+  AuthenticatedBackupsIndexRoute: typeof AuthenticatedBackupsIndexRoute
   AuthenticatedBillingsIndexRoute: typeof AuthenticatedBillingsIndexRoute
   AuthenticatedDashboardIndexRoute: typeof AuthenticatedDashboardIndexRoute
+  AuthenticatedMetricsIndexRoute: typeof AuthenticatedMetricsIndexRoute
   AuthenticatedMigrationsIndexRoute: typeof AuthenticatedMigrationsIndexRoute
   AuthenticatedProfilIndexRoute: typeof AuthenticatedProfilIndexRoute
   AuthenticatedSettingsIndexRoute: typeof AuthenticatedSettingsIndexRoute
   AuthenticatedStorageIndexRoute: typeof AuthenticatedStorageIndexRoute
+  AuthenticatedSupportIndexRoute: typeof AuthenticatedSupportIndexRoute
   AuthenticatedTenantsIndexRoute: typeof AuthenticatedTenantsIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAdminsIndexRoute: AuthenticatedAdminsIndexRoute,
+  AuthenticatedBackupsIndexRoute: AuthenticatedBackupsIndexRoute,
   AuthenticatedBillingsIndexRoute: AuthenticatedBillingsIndexRoute,
   AuthenticatedDashboardIndexRoute: AuthenticatedDashboardIndexRoute,
+  AuthenticatedMetricsIndexRoute: AuthenticatedMetricsIndexRoute,
   AuthenticatedMigrationsIndexRoute: AuthenticatedMigrationsIndexRoute,
   AuthenticatedProfilIndexRoute: AuthenticatedProfilIndexRoute,
   AuthenticatedSettingsIndexRoute: AuthenticatedSettingsIndexRoute,
   AuthenticatedStorageIndexRoute: AuthenticatedStorageIndexRoute,
+  AuthenticatedSupportIndexRoute: AuthenticatedSupportIndexRoute,
   AuthenticatedTenantsIndexRoute: AuthenticatedTenantsIndexRoute,
 }
 
