@@ -40,7 +40,6 @@ export function EditTenantForm({
     isLoading = false,
 }: EditTenantFormProps) {
     type FormValues = Omit<EditTenantPayload, 'id'>
-    console.log(tenant)
 
     const form = useForm<FormValues>({
         defaultValues: {

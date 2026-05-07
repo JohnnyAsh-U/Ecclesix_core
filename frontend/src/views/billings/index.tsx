@@ -81,9 +81,6 @@ export function SubscriptionsTable() {
   if (!data || data.length === 0) {
     return <div className="text-center py-8 text-gray-600">Aucune facturation récente trouvée</div>
   }
-
-  console.log(data)
-
   return (
     <div className="rounded-lg border overflow-hidden">
       <Table>

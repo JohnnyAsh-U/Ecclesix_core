@@ -19,8 +19,10 @@ import { Route as errors404RouteImport } from './routes/(errors)/404'
 import { Route as errors403RouteImport } from './routes/(errors)/403'
 import { Route as errors401RouteImport } from './routes/(errors)/401'
 import { Route as AuthenticatedTenantsIndexRouteImport } from './routes/_authenticated/tenants/index'
+import { Route as AuthenticatedStorageIndexRouteImport } from './routes/_authenticated/storage/index'
 import { Route as AuthenticatedSettingsIndexRouteImport } from './routes/_authenticated/settings/index'
 import { Route as AuthenticatedProfilIndexRouteImport } from './routes/_authenticated/profil/index'
+import { Route as AuthenticatedMigrationsIndexRouteImport } from './routes/_authenticated/migrations/index'
 import { Route as AuthenticatedDashboardIndexRouteImport } from './routes/_authenticated/dashboard/index'
 import { Route as AuthenticatedBillingsIndexRouteImport } from './routes/_authenticated/billings/index'
 
@@ -73,6 +75,12 @@ const AuthenticatedTenantsIndexRoute =
     path: '/tenants/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedStorageIndexRoute =
+  AuthenticatedStorageIndexRouteImport.update({
+    id: '/storage/',
+    path: '/storage/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedSettingsIndexRoute =
   AuthenticatedSettingsIndexRouteImport.update({
     id: '/settings/',
@@ -83,6 +91,12 @@ const AuthenticatedProfilIndexRoute =
   AuthenticatedProfilIndexRouteImport.update({
     id: '/profil/',
     path: '/profil/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedMigrationsIndexRoute =
+  AuthenticatedMigrationsIndexRouteImport.update({
+    id: '/migrations/',
+    path: '/migrations/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedDashboardIndexRoute =
@@ -108,8 +122,10 @@ export interface FileRoutesByFullPath {
   '/login': typeof UnauthenticatedLoginRoute
   '/billings/': typeof AuthenticatedBillingsIndexRoute
   '/dashboard/': typeof AuthenticatedDashboardIndexRoute
+  '/migrations/': typeof AuthenticatedMigrationsIndexRoute
   '/profil/': typeof AuthenticatedProfilIndexRoute
   '/settings/': typeof AuthenticatedSettingsIndexRoute
+  '/storage/': typeof AuthenticatedStorageIndexRoute
   '/tenants/': typeof AuthenticatedTenantsIndexRoute
 }
 export interface FileRoutesByTo {
@@ -122,8 +138,10 @@ export interface FileRoutesByTo {
   '/login': typeof UnauthenticatedLoginRoute
   '/billings': typeof AuthenticatedBillingsIndexRoute
   '/dashboard': typeof AuthenticatedDashboardIndexRoute
+  '/migrations': typeof AuthenticatedMigrationsIndexRoute
   '/profil': typeof AuthenticatedProfilIndexRoute
   '/settings': typeof AuthenticatedSettingsIndexRoute
+  '/storage': typeof AuthenticatedStorageIndexRoute
   '/tenants': typeof AuthenticatedTenantsIndexRoute
 }
 export interface FileRoutesById {
@@ -139,8 +157,10 @@ export interface FileRoutesById {
   '/_unauthenticated/login': typeof UnauthenticatedLoginRoute
   '/_authenticated/billings/': typeof AuthenticatedBillingsIndexRoute
   '/_authenticated/dashboard/': typeof AuthenticatedDashboardIndexRoute
+  '/_authenticated/migrations/': typeof AuthenticatedMigrationsIndexRoute
   '/_authenticated/profil/': typeof AuthenticatedProfilIndexRoute
   '/_authenticated/settings/': typeof AuthenticatedSettingsIndexRoute
+  '/_authenticated/storage/': typeof AuthenticatedStorageIndexRoute
   '/_authenticated/tenants/': typeof AuthenticatedTenantsIndexRoute
 }
 export interface FileRouteTypes {
@@ -155,8 +175,10 @@ export interface FileRouteTypes {
     | '/login'
     | '/billings/'
     | '/dashboard/'
+    | '/migrations/'
     | '/profil/'
     | '/settings/'
+    | '/storage/'
     | '/tenants/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -169,8 +191,10 @@ export interface FileRouteTypes {
     | '/login'
     | '/billings'
     | '/dashboard'
+    | '/migrations'
     | '/profil'
     | '/settings'
+    | '/storage'
     | '/tenants'
   id:
     | '__root__'
@@ -185,8 +209,10 @@ export interface FileRouteTypes {
     | '/_unauthenticated/login'
     | '/_authenticated/billings/'
     | '/_authenticated/dashboard/'
+    | '/_authenticated/migrations/'
     | '/_authenticated/profil/'
     | '/_authenticated/settings/'
+    | '/_authenticated/storage/'
     | '/_authenticated/tenants/'
   fileRoutesById: FileRoutesById
 }
@@ -273,6 +299,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedTenantsIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/storage/': {
+      id: '/_authenticated/storage/'
+      path: '/storage'
+      fullPath: '/storage/'
+      preLoaderRoute: typeof AuthenticatedStorageIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/settings/': {
       id: '/_authenticated/settings/'
       path: '/settings'
@@ -285,6 +318,13 @@ declare module '@tanstack/react-router' {
       path: '/profil'
       fullPath: '/profil/'
       preLoaderRoute: typeof AuthenticatedProfilIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/migrations/': {
+      id: '/_authenticated/migrations/'
+      path: '/migrations'
+      fullPath: '/migrations/'
+      preLoaderRoute: typeof AuthenticatedMigrationsIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/dashboard/': {
@@ -307,16 +347,20 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedBillingsIndexRoute: typeof AuthenticatedBillingsIndexRoute
   AuthenticatedDashboardIndexRoute: typeof AuthenticatedDashboardIndexRoute
+  AuthenticatedMigrationsIndexRoute: typeof AuthenticatedMigrationsIndexRoute
   AuthenticatedProfilIndexRoute: typeof AuthenticatedProfilIndexRoute
   AuthenticatedSettingsIndexRoute: typeof AuthenticatedSettingsIndexRoute
+  AuthenticatedStorageIndexRoute: typeof AuthenticatedStorageIndexRoute
   AuthenticatedTenantsIndexRoute: typeof AuthenticatedTenantsIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedBillingsIndexRoute: AuthenticatedBillingsIndexRoute,
   AuthenticatedDashboardIndexRoute: AuthenticatedDashboardIndexRoute,
+  AuthenticatedMigrationsIndexRoute: AuthenticatedMigrationsIndexRoute,
   AuthenticatedProfilIndexRoute: AuthenticatedProfilIndexRoute,
   AuthenticatedSettingsIndexRoute: AuthenticatedSettingsIndexRoute,
+  AuthenticatedStorageIndexRoute: AuthenticatedStorageIndexRoute,
   AuthenticatedTenantsIndexRoute: AuthenticatedTenantsIndexRoute,
 }
 

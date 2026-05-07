@@ -211,7 +211,6 @@ class DjangoClient:
     
     async def get(self, path: str, role: str = "admin", **kwargs) -> Dict[str, Any]:
         """GET request to Django API."""
-        print(path)
         return await self.request("GET", path, role, **kwargs)
     
     async def post(self, path: str, role: str = "admin", **kwargs) -> Dict[str, Any]:

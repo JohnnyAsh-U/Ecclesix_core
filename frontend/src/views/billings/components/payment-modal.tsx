@@ -48,7 +48,6 @@ export default function PaymentModal({ open, onOpenChange, bill, mode }: Payment
   }, [bill, mode])
 
   const handleSubmit = async (e?: React.FormEvent) => {
-    console.log("here")
     e?.preventDefault()
     if (!bill) return
     const payload: Record<string, any> = {

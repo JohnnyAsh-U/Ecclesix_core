@@ -11,7 +11,7 @@ export const TenantUrl = "/tenants"
 export const ActivateTenantUrl = (id: number) => `${TenantUrl}/${id}/activate`
 export const DeactivateTenantUrl = (id: number) => `${TenantUrl}/${id}/deactivate`
 export const UpdateDomainUrl = (id:number) => `${TenantUrl}/${id}/domains`
-export const UpdateStorageUrl = (id: number) => `${TenantUrl}/${id}/storage`
+export const TenantStorageUrl = (id: number) => `${TenantUrl}/${id}/storage`
 
 
 // Billing Endpint Url
@@ -25,3 +25,13 @@ export const BillingStatsUrl = `${BillingUrl}/stats`
 export const BillingFilterUrl = `${BillingUrl}/filter`
 export const BillingCreateUrl = `${BillingUrl}/create`
 export const BillingChangePlanUrl = `${BillingUrl}/change-plan`
+
+// Migrations Endpoints (internal)
+export const MigrationsUrl = "/migrations"
+export const MigrationsSummaryUrl = `${MigrationsUrl}`
+export const MigrationsRunUrl = (tenantId: number) => `${MigrationsUrl}/${tenantId}/migrate`
+export const MigrationsStateUrl = (tenantId: number) => `${MigrationsUrl}/${tenantId}/migration-state`
+
+// Storage Endpoints (internal)
+export const TenantsStorageListUrl = '/storage'
+export const TenantsStorageStatUrl = `${TenantsStorageListUrl}/stats`

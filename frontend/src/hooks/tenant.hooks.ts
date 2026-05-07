@@ -89,6 +89,15 @@ export function useUpdateDomain() {
   })
 }
 
+// useGetStorage
+export function useGetStorage(tenantId?: number){
+  return useQuery({
+    queryKey: ['tenant', tenantId],
+    queryFn: () => tenantService.getStorage(tenantId as number),
+    enabled: !!tenantId,
+  })
+}
+
 export function useUpdateStorage() {
   const queryClient = useQueryClient()
 

@@ -113,6 +113,16 @@ async def add_tenant_domain(
 
 
 
+@tenants_router.get("/{tenant_id}/storage")
+async def get_tenant_storage(
+    tenant_id: int,
+    client: DjangoClient = Depends(get_django_client),
+    user: User = Depends(require_roles(ADMIN, MOD)),
+) -> Dict[str, Any]:
+    """Get storage information for a tenant from Django."""
+    return await client.get(TENANTS_STORAGE.format(tenant_id=tenant_id), role=user.role)
+
+
 
 @tenants_router.patch("/{tenant_id}/storage")
 async def update_tenant_storage(

@@ -6,40 +6,33 @@ Handles church storage information and storage management.
 import logging
 from typing import Any, Dict, List
 from fastapi import APIRouter, Depends, Request
-from src.core.dependencies import get_django_client, DjangoClient
+from src.schemas.roles import ADMIN, MOD
+from src.core.dependencies import get_django_client, DjangoClient, require_roles
 from src.core.internal_urls import (
-    STORAGE_CHURCHES,
-    STORAGE_SUMMARY,
+    TENANTS_STORAGE_LIST,
+    TENANTS_STORAGE_STAT,
 )
+from src.database.models import Admin as User
 
 logger = logging.getLogger(__name__)
 
 storage_router = APIRouter(prefix="/storage", tags=["storage"])
 
 
-def get_user_role(request: Request) -> str:
-    """Extract user role from request context. Defaults to 'mod' (restrictive)."""
-    role = getattr(request.state, "user_role", "mod")
-    if role not in ["admin", "mod"]:
-        role = "mod"
-    return role
-
-
-@storage_router.get("/churches")
-async def list_churches_storage(
+@storage_router.get("")
+async def list_tenants_storage(
     client: DjangoClient = Depends(get_django_client),
-    request: Request = None,
+    user : User = Depends(require_roles(ADMIN, MOD)),
 ) -> List[Dict[str, Any]]:
-    """List church storage information from Django."""
-    role = get_user_role(request)
-    return await client.get(STORAGE_CHURCHES, role=role)
+    """List tenant storage information from Django."""
+    return await client.get(TENANTS_STORAGE_LIST, role=user.role)
 
 
-@storage_router.get("/summary")
-async def get_storage_summary(
+@storage_router.get('/stats')
+async def storage_stats(
     client: DjangoClient = Depends(get_django_client),
-    request: Request = None,
+    user : User = Depends(require_roles(ADMIN, MOD)),
 ) -> Dict[str, Any]:
-    """Get storage summary from Django."""
-    role = get_user_role(request)
-    return await client.get(STORAGE_SUMMARY, role=role)
+    """Get overall storage statistics from Django."""
+    return await client.get(TENANTS_STORAGE_STAT, role=user.role)
+

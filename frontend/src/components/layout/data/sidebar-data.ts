@@ -8,6 +8,7 @@ import {
   BarChart3,
   Shield,
   Zap,
+  DatabaseIcon,
 } from 'lucide-react'
 import { type SidebarData } from '../types'
 import { useAuthStore } from '@/stores/auth.store'
@@ -37,6 +38,11 @@ export const sidebarData = (): SidebarData => {
             title: 'Facturation',
             url: '/billings',
             icon: CreditCard,
+          },
+          {
+            title: 'Migrations',
+            url: '/migrations',
+            icon: DatabaseIcon,
           },
           {
             title: 'Sauvegardes',

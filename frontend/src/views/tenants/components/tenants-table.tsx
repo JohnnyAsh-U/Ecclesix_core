@@ -141,7 +141,6 @@ export function TenantsTable({ tenants, isLoading, onEdit }: TenantsTableProps) 
     )
   }
 
-  console.log(tenants)
 
   return (
     <>

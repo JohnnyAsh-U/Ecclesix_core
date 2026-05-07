@@ -20,8 +20,8 @@ STATS_API_LATENCY = "/api/v1/internal/stats/api-latency"
 # Migrations Endpoints
 # ============================================================================
 MIGRATIONS_SUMMARY = "/api/v1/internal/tenants/migrations"
-MIGRATIONS_RUN = "/api/v1/internal/tenants/{schema_name}/migrate"
-MIGRATIONS_STATE = "/api/v1/internal/tenants/{schema_name}/migration-state"
+MIGRATIONS_RUN = "/api/v1/internal/tenants/{tenant_id}/migrate"
+MIGRATIONS_STATE = "/api/v1/internal/tenants/{tenant_id}/migration-state"
 
 # ============================================================================
 # Tenants Endpoints
@@ -53,8 +53,9 @@ PLANS_DETAIL = "/api/v1/internal/plans/{plan_id}"
 # ============================================================================
 # Storage Endpoints
 # ============================================================================
-STORAGE_CHURCHES = "/api/v1/internal/churches/storage"
-STORAGE_SUMMARY = "/api/v1/internal/storage/summary"
+
+TENANTS_STORAGE_LIST = "/api/v1/internal/storage"
+TENANTS_STORAGE_STAT = "/api/v1/internal/storage/stats"
 
 # ============================================================================
 # Health Endpoints

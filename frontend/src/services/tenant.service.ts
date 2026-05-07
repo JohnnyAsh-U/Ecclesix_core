@@ -1,6 +1,6 @@
 import api from '@/config/api'
 import type { Tenant, TenantStorage } from '@/types'
-import { ActivateTenantUrl, DeactivateTenantUrl, TenantUrl, UpdateDomainUrl, UpdateStorageUrl } from '@/utils/constant'
+import { ActivateTenantUrl, DeactivateTenantUrl, TenantStorageUrl, TenantUrl, UpdateDomainUrl } from '@/utils/constant'
 
 
 export interface CreateTenantPayload {
@@ -60,13 +60,18 @@ export const tenantService = {
     return response.data
   },
 
+  // Get storage details
+  async getStorage(tenantId: number): Promise<any> {
+    const response = await api.get(TenantStorageUrl(tenantId))
+    return response.data
+  },
 
   // Update storage quota
   async updateStorage(
     tenantId: number,
     quota_bytes: number
   ): Promise<TenantStorage> {
-    const response = await api.patch<TenantStorage>(UpdateStorageUrl(tenantId), { quota_bytes } as StoragePayload)
+    const response = await api.patch<TenantStorage>(TenantStorageUrl(tenantId), { quota_bytes } as StoragePayload)
     return response.data
   },
 
