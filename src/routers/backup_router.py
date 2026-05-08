@@ -63,36 +63,41 @@ async def backup_full_database(
     return {"message": "Full database backup job queued"}
 
 
-@backup_router.delete("/{backup_id}", status_code=200)
-async def delete_backup(
-    backup_id: str,
-    user = Depends(require_roles(ADMIN, MOD)),
-    backup_service: BackupService = Depends(get_backup_service),
-) -> Dict[str, Any]:
-    """Delete a backup by ID."""
-    return await backup_service.delete_backup(backup_id)
-
 
 @backup_router.post("/{backup_id}/restore", status_code=202)
 async def restore_backup(
     backup_id: str,
-    user = Depends(require_roles(ADMIN, MOD)),
+    user = Depends(require_roles(ADMIN)),
     backup_service: BackupService = Depends(get_backup_service),
 ) -> Dict[str, Any]:
     """Restore a database from a backup."""
     return await backup_service.restore_backup(backup_id)
 
 
-@backup_router.get("/{backup_id}/download")
-async def download_backup(
+
+@backup_router.post("/{backup_id}/download-url")
+async def get_backup_download_url(
     backup_id: str,
-    background_tasks: BackgroundTasks,
-    user = Depends(require_roles(ADMIN, MOD)),
+    user = Depends(require_roles(ADMIN)),
     backup_service: BackupService = Depends(get_backup_service),
-) -> FileResponse:
-    """Download a backup file."""
-    file_response = await backup_service.download_backup(backup_id)
-    # Clean up the temporary downloaded file after sending it
-    import os
-    background_tasks.add_task(lambda path: os.path.exists(path) and os.remove(path), file_response.path)
-    return file_response
+) -> Dict[str, Any]:
+    """Generate a presigned S3 URL for a backup file and write an audit log entry.
+
+    Returns JSON with `url`, `expires_in_seconds`, and a `warning` string.
+    """
+    return await backup_service.generate_download_url(backup_id, admin=user.username)
+
+
+@backup_router.post("/purge", status_code=200)
+async def purge_old_backups(
+    user = Depends(require_roles(ADMIN)),
+    backup_service: BackupService = Depends(get_backup_service),
+) -> Dict[str, Any]:
+    """Purge old backups for all tenants using each tenant's configured retention.
+
+    Query params:
+    - include_full: if true, also purge full backups older than `full_retention_days`.
+    - full_retention_days: retention days to apply for full backups when included.
+    """
+    await backup_service.purge_all_old_backups()
+    return {"message": "Purge completed (or scheduled)"}

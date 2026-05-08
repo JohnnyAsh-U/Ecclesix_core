@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { backupService, TenantBackup, BackupJob } from '@/services/backup.service'
+import { backupService } from '@/services/backup.service'
 import { toast } from 'sonner'
 
 // Query key factory for backups
@@ -9,13 +9,22 @@ const backupKeys = {
 }
 
 /**
+ * Hook to fetch detailed backups for a specific tenant
+ */
+export function useGetTenantBackups(tenantSchema?: string) {
+  return useQuery({
+    queryKey: [...backupKeys.tenants(), 'tenant', tenantSchema],
+    queryFn: () => backupService.getTenantBackups(tenantSchema as string),
+  })
+}
+
+/**
  * Hook to fetch list of all tenants with their backup information
  */
 export function useListTenantBackups() {
   return useQuery({
     queryKey: backupKeys.tenants(),
     queryFn: () => backupService.listTenantBackups(),
-    staleTime: 1000 * 60 * 5, // 5 minutes
   })
 }
 
@@ -27,9 +36,8 @@ export function useBackupTenant() {
 
   return useMutation({
     mutationFn: (tenantName: string) => backupService.backupTenant(tenantName),
-    onSuccess: (data, tenantName) => {
+    onSuccess: (_, tenantName) => {
       toast.success(`Backup started for ${tenantName}`)
-      // Refetch backup list
       queryClient.invalidateQueries({ queryKey: backupKeys.tenants() })
     },
     onError: (error: any) => {
@@ -52,7 +60,6 @@ export function useBackupFull() {
     mutationFn: () => backupService.backupFull(),
     onSuccess: () => {
       toast.success('Full backup started')
-      // Refetch backup list
       queryClient.invalidateQueries({ queryKey: backupKeys.tenants() })
     },
     onError: (error: any) => {
@@ -60,29 +67,6 @@ export function useBackupFull() {
         error?.response?.data?.detail ||
         error?.message ||
         'Failed to start full backup'
-      toast.error(message)
-    },
-  })
-}
-
-/**
- * Hook to delete a backup
- */
-export function useDeleteBackup() {
-  const queryClient = useQueryClient()
-
-  return useMutation({
-    mutationFn: (backupId: string) => backupService.deleteBackup(backupId),
-    onSuccess: () => {
-      toast.success('Backup deleted successfully')
-      // Refetch backup list
-      queryClient.invalidateQueries({ queryKey: backupKeys.tenants() })
-    },
-    onError: (error: any) => {
-      const message =
-        error?.response?.data?.detail ||
-        error?.message ||
-        'Failed to delete backup'
       toast.error(message)
     },
   })
@@ -117,26 +101,40 @@ export function useRestoreBackup() {
 export function useDownloadBackup() {
   return useMutation({
     mutationFn: async (backupId: string) => {
-      const blob = await backupService.downloadBackup(backupId)
-      // Create download link
-      const url = window.URL.createObjectURL(blob)
-      const link = document.createElement('a')
-      link.href = url
-      link.download = `backup_${backupId}.dump`
-      document.body.appendChild(link)
-      link.click()
-      document.body.removeChild(link)
-      window.URL.revokeObjectURL(url)
-      return { success: true }
+      const data = await backupService.getDownloadUrl(backupId)
+      // Return presigned URL payload for the caller to display / copy
+      return data
     },
     onSuccess: () => {
-      toast.success('Backup downloaded successfully')
+      toast.success('Download URL generated')
     },
     onError: (error: any) => {
       const message =
         error?.response?.data?.detail ||
         error?.message ||
         'Failed to download backup'
+      toast.error(message)
+    },
+  })
+}
+
+/**
+ * Hook to trigger purge of old backups for all tenants
+ */
+export function usePurgeBackups() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: () => backupService.purgeBackups(),
+    onSuccess: () => {
+      toast.success('Purge completed')
+      queryClient.invalidateQueries({ queryKey: backupKeys.tenants() })
+    },
+    onError: (error: any) => {
+      const message =
+        error?.response?.data?.detail ||
+        error?.message ||
+        'Failed to purge backups'
       toast.error(message)
     },
   })

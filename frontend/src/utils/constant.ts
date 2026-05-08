@@ -35,3 +35,14 @@ export const MigrationsStateUrl = (tenantId: number) => `${MigrationsUrl}/${tena
 // Storage Endpoints (internal)
 export const TenantsStorageListUrl = '/storage'
 export const TenantsStorageStatUrl = `${TenantsStorageListUrl}/stats`
+
+
+// Backup Endpoints (internal)
+export const BackupUrl = "/backups"
+export const TenantBackupsUrl = (tenantSchema: string) => `${BackupUrl}/${tenantSchema}`
+export const BackupTenantUrl = (tenantSchema: string) => `${BackupUrl}/tenant/${tenantSchema}`
+export const BackupFullUrl = `${BackupUrl}/full`
+export const BackupDeleteUrl = (backupId: string) => `${BackupUrl}/${backupId}`
+export const BackupRestoreUrl = (backupId: string) => `${BackupUrl}/${backupId}/restore`
+export const BackupDownloadUrl = (backupId: string) => `${BackupUrl}/${backupId}/download-url`
+export const BackupPurgeUrl = `${BackupUrl}/purge`

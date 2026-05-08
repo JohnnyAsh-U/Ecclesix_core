@@ -1,10 +1,18 @@
 import api from '@/config/api'
+import {  
+  BackupTenantUrl, 
+  BackupPurgeUrl,
+  BackupDownloadUrl, 
+  BackupFullUrl, 
+  BackupRestoreUrl, 
+  BackupUrl,
+  TenantBackupsUrl
+} from '@/utils/constant'
 
 export interface TenantBackup {
   tenant_id: number
   tenant_name: string
-  schema_name: string
-  next_schedule: string | null
+  tenant_schema: string
   last_backup: string | null
   size_bytes: number
   status: string
@@ -26,48 +34,49 @@ export interface BackupJob {
 export const backupService = {
   // Get all tenants with backup info
   async listTenantBackups() {
-    const response = await api.get<TenantBackup[]>(
-      '/api/v1/internal/backups'
-    )
+    const response = await api.get<TenantBackup[]>(BackupUrl)
+    return response.data
+  },
+
+  // Get detailed backups for a specific tenant
+  async getTenantBackups(tenantSchema: string) {
+    const response = await api.get<BackupJob[]>(TenantBackupsUrl(tenantSchema))
     return response.data
   },
 
   // Trigger on-demand backup for a specific tenant
-  async backupTenant(tenantName: string) {
+  async backupTenant(tenantSchema: string) {
     const response = await api.post(
-      `/api/v1/internal/backups/tenant/${tenantName}`
+      BackupTenantUrl(tenantSchema)
     )
     return response.data
   },
 
   // Trigger full database backup
   async backupFull() {
-    const response = await api.post('/api/v1/internal/backups/full')
+    const response = await api.post(BackupFullUrl)
     return response.data
   },
 
-  // Delete a backup
-  async deleteBackup(backupId: string) {
-    const response = await api.delete(
-      `/api/v1/internal/backups/${backupId}`
-    )
-    return response.data
-  },
 
   // Restore from a backup
   async restoreBackup(backupId: string) {
     const response = await api.post(
-      `/api/v1/internal/backups/${backupId}/restore`
+      BackupRestoreUrl(backupId)
     )
     return response.data
   },
 
   // Download a backup file
-  async downloadBackup(backupId: string) {
-    const response = await api.get(
-      `/api/v1/internal/backups/${backupId}/download`,
-      { responseType: 'blob' }
-    )
+  // Get a presigned download URL for a backup
+  async getDownloadUrl(backupId: string) {
+    const response = await api.post(BackupDownloadUrl(backupId))
+    return response.data
+  },
+
+  // Purge old backups for all tenants; include_full and full_retention_days are optional
+  async purgeBackups() {
+    const response = await api.post(BackupPurgeUrl, null)
     return response.data
   },
 }

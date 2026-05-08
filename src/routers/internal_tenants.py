@@ -6,7 +6,11 @@ Handles tenant CRUD operations, activation, deactivation, and domain management.
 import logging
 from typing import Any, Dict, List
 from fastapi import APIRouter, Depends
-from src.core.dependencies import get_django_client, DjangoClient, require_roles
+from src.core.dependencies import get_django_client, DjangoClient, require_roles, get_db
+from sqlalchemy.ext.asyncio import AsyncSession
+from uuid import uuid4
+from src.database.models import TenantBackupConfig
+from src.services.backup_service import BackupService
 from src.database.models import Admin as User
 from src.schemas.tenant_schema import TenantCreate
 from src.core.internal_urls import (
@@ -39,6 +43,7 @@ async def create_tenant(
     tenant: TenantCreate,
     client: DjangoClient = Depends(get_django_client),
     user: User = Depends(require_roles(ADMIN, MOD)),
+    db: AsyncSession = Depends(get_db),
 ) -> Dict[str, Any]:
     """Validate tenant creation payload, then proxy to Django internal API."""
     # payload = tenant.dict()
@@ -47,7 +52,37 @@ async def create_tenant(
     #     # derive schema_name from domain if not provided
     #     payload["schema_name"] = payload.get("domain").replace('.', '_')
 
-    return await client.post(TENANTS_CREATE, role=user.role, json=tenant.dict())
+    # Proxy creation request to Django
+    response = await client.post(TENANTS_CREATE, role=user.role, json=tenant.dict())
+
+    # If creation was successful, create a local TenantBackupConfig and register backup job
+    try:
+        # Determine tenant schema name (prefer value returned by Django, fallback to request)
+        schema_name = None
+        if isinstance(response, dict):
+            schema_name = response.get("schema_name")
+            tenant_name = response.get("church_name")
+        else:
+            raise ValueError("Unexpected response format from Django when creating tenant")
+        
+        config = TenantBackupConfig(
+            id=uuid4(),
+            tenant_name=tenant_name,
+            tenant_schema=schema_name,
+            enabled=True,
+            retention_days=30,  # Default retention, can be updated later
+        )
+        
+        db.add(config)
+        await db.commit()
+        await db.refresh(config)
+
+        # Register scheduled backup for the new tenant
+        BackupService.register_tenant_backup_job(schema_name)
+    except Exception as e:
+        logger.exception(f"Failed to create TenantBackupConfig or register job for '{tenant.domain}': {e}")
+
+    return response
 
 
 @tenants_router.get("/{tenant_id}")
@@ -78,7 +113,29 @@ async def activate_tenant(
     user: User = Depends(require_roles(ADMIN, MOD)),
 ) -> Dict[str, Any]:
     """Activate a tenant in Django."""
-    return await client.post(TENANTS_ACTIVATE.format(tenant_id=tenant_id), role=user.role)
+    response = await client.post(TENANTS_ACTIVATE.format(tenant_id=tenant_id), role=user.role)
+
+    # Try to register scheduled backup for activated tenant
+    try:
+        schema_name = None
+        if isinstance(response, dict):
+            schema_name = response.get("schema_name") or response.get("schema")
+
+        if not schema_name:
+            # fetch tenant details from Django as fallback
+            details = await client.get(TENANTS_DETAIL.format(tenant_id=tenant_id), role=user.role)
+            if isinstance(details, dict):
+                schema_name = details.get("schema_name") or details.get("schema")
+
+        if schema_name:
+            try:
+                BackupService.register_tenant_backup_job(schema_name)
+            except Exception as e:
+                logger.exception(f"Failed to register backup job for activated tenant '{schema_name}': {e}")
+    except Exception:
+        logger.exception(f"Error while attempting to register backup job after activating tenant {tenant_id}")
+
+    return response
 
 
 @tenants_router.post("/{tenant_id}/deactivate")
@@ -88,7 +145,28 @@ async def deactivate_tenant(
     user: User = Depends(require_roles(ADMIN, MOD)),
 ) -> Dict[str, Any]:
     """Deactivate a tenant in Django."""
-    return await client.post(TENANTS_DEACTIVATE.format(tenant_id=tenant_id), role=user.role)
+    response = await client.post(TENANTS_DEACTIVATE.format(tenant_id=tenant_id), role=user.role)
+
+    # Try to unregister scheduled backup for deactivated tenant
+    try:
+        schema_name = None
+        if isinstance(response, dict):
+            schema_name = response.get("schema_name") or response.get("schema")
+
+        if not schema_name:
+            details = await client.get(TENANTS_DETAIL.format(tenant_id=tenant_id), role=user.role)
+            if isinstance(details, dict):
+                schema_name = details.get("schema_name") or details.get("schema")
+
+        if schema_name:
+            try:
+                BackupService.unregister_tenant_backup_job(schema_name)
+            except Exception as e:
+                logger.exception(f"Failed to unregister backup job for deactivated tenant '{schema_name}': {e}")
+    except Exception:
+        logger.exception(f"Error while attempting to unregister backup job after deactivating tenant {tenant_id}")
+
+    return response
 
 
 @tenants_router.get("/{tenant_id}/domains")

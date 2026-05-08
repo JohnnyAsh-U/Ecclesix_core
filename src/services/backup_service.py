@@ -2,23 +2,44 @@ import logging
 import os
 import subprocess
 from typing import Dict, Any, List
-from urllib.parse import urlparse
 
 from starlette.responses import FileResponse
 from src.database.models import BackupStatus, BackupType, TenantBackupConfig
 from src.core.storage import ObjectStorageClient
 from asyncio import Semaphore
 from src.core.config import get_settings
+from src.core.dependencies import get_backup_service
+from src.database.session import AsyncSessionLocal
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.database.models import BackupJob
 from datetime import datetime, timedelta
-from sqlalchemy import select, desc
+from sqlalchemy import select, desc, text
+import re, hashlib
 from fastapi import HTTPException, status
+import json
 from uuid import uuid4, UUID
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
 
 
 
 logger = logging.getLogger(__name__)
+
+url = get_settings().DATABASE_URL.replace("+asyncpg", "").replace("aiomysql", "")
+
+
+scheduler = AsyncIOScheduler(
+    jobstores={
+        'default': SQLAlchemyJobStore(url=url)
+    },
+    job_defaults={
+        'coalesce': True,
+        'max_instances': 1,
+        'misfire_grace_time': 600,  # 10 minutes
+    },
+    timezone="UTC"
+)
+
 
 # Global semaphore — shared across all backup tasks
 backup_semaphore = Semaphore(get_settings().BACKUP_CONCURRENCY_LIMIT)
@@ -60,7 +81,6 @@ class BackupService(ObjectStorageClient):
             f"--port={db_params['port']}",
             f"--username={db_params['user']}",
             f"--file={local_path}",
-            "--data-only",
         ]
         
         if backup_type == BackupType.schema:
@@ -194,24 +214,75 @@ class BackupService(ObjectStorageClient):
             self.download_file(storage_path, local_path)
             logger.info(f"Downloaded backup file to {local_path}")
             
+            # Validate that we are not restoring a full backup via this method
+            if tenant_schema == "__full__" or tenant_schema == 'public':
+                logger.error(f"Attempted to restore full/public backup via schema restore: {backup_id}")
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Restoring full or public database backups is not supported via this endpoint",
+                )
+
+            # Basic validation of tenant schema to avoid SQL injection and invalid identifiers
+            if not re.match(r'^[a-zA-Z0-9_]+$', tenant_schema):
+                logger.error(f"Invalid schema name provided for restore: '{tenant_schema}'")
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Invalid tenant schema name",
+                )
+
             # Parse database parameters
             db_params = self._parse_database_url()
-            
+
+            # Before restoring schema-level backup, drop and recreate the schema
+            # on the backup database defined by db_params (run via psql so it targets the backup DB)
+            try:
+                sql = f'DROP SCHEMA IF EXISTS "{tenant_schema}" CASCADE; CREATE SCHEMA "{tenant_schema}";'
+                psql_cmd = [
+                    "psql",
+                    f"--host={db_params['host']}",
+                    f"--port={db_params['port']}",
+                    f"--username={db_params['user']}",
+                    f"--dbname={db_params['dbname']}",
+                    "-c",
+                    sql,
+                ]
+                env = os.environ.copy()
+                if db_params.get('password'):
+                    env['PGPASSWORD'] = db_params['password']
+
+                logger.info(f"Preparing schema '{tenant_schema}' on backup DB {db_params['host']}:{db_params['port']}/{db_params['dbname']}")
+                result = subprocess.run(psql_cmd, capture_output=True, text=True, env=env, timeout=60)
+                if result.returncode != 0:
+                    logger.error(f"psql schema prepare failed: {result.stderr}")
+                    raise HTTPException(
+                        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                        detail=f"Failed to prepare schema on backup DB: {result.stderr.strip()}",
+                    )
+                logger.info(f"Dropped and recreated schema '{tenant_schema}' on backup DB before restore")
+            except HTTPException:
+                raise
+            except Exception as schema_err:
+                logger.error(f"Failed to prepare schema '{tenant_schema}' for restore: {schema_err}")
+                raise HTTPException(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail=f"Failed to prepare schema for restore: {str(schema_err)}",
+                )
+
             # Execute pg_restore command with proper parameters
             cmd = [
                 "pg_restore",
                 "--format=custom",
                 "--no-owner",
                 "--no-privileges",
+                f"--schema={tenant_schema}",
                 f"--host={db_params['host']}",
                 f"--port={db_params['port']}",
                 f"--username={db_params['user']}",
                 f"--dbname={db_params['dbname']}",
                 local_path,
-                "--data-only",
             ]
             
-            # Set environment variables for secure password passing
+            # # Set environment variables for secure password passing
             env = os.environ.copy()
             if db_params['password']:
                 env['PGPASSWORD'] = db_params['password']
@@ -241,6 +312,7 @@ class BackupService(ObjectStorageClient):
             if os.path.exists(local_path):
                 os.remove(local_path)
                 logger.info(f"Cleaned up restore file '{local_path}'")
+
     
     
     def download_file(self, storage_path: str, local_path: str = None) -> str:
@@ -257,7 +329,7 @@ class BackupService(ObjectStorageClient):
     async def purge_old_backups(self, tenant_schema: str, retention_days: int):
         """Permanently delete backup files from object storage that are older than the retention period."""
         
-        prefix = f"backups/tenants/{tenant_schema}/"
+        prefix = f"backups/tenants/{tenant_schema}/" if tenant_schema != '__full__' else "backups/full/"
         cutoff_date = datetime.utcnow() - timedelta(days=retention_days)
         paginator = self.list_files(prefix=prefix)
         
@@ -272,23 +344,49 @@ class BackupService(ObjectStorageClient):
                     self.delete_file(key)
                     logger.info(f"Deleted old backup '{key}' for tenant '{tenant_schema}'")
                     
-    async def purge_old_full_backups(self, retention_days: int):
-        """Permanently delete full backup files from object storage that are older than the retention period."""
-        
-        prefix = "backups/full/"
-        cutoff_date = datetime.utcnow() - timedelta(days=retention_days)
-        paginator = self.list_files(prefix=prefix)
-        
-        async for page in paginator:
-            for file in page.get("Contents", []):
-                key = file["Key"]
-                last_modified = file["LastModified"]
-                
-                if last_modified < cutoff_date:
-                    logger.info(f"Purging old full backup '{key}' last modified on {last_modified}")
-                    self.delete_file(key)
-                    logger.info(f"Deleted old full backup '{key}'")
+          
+    async def purge_all_old_backups(self):
+        """Purge old backups for all tenants using each tenant's configured retention_days.
+
+        If `include_full` is True, also purge full backups older than `full_retention_days`.
+        """
+        try:
+            # Load tenant backup configs that are enabled
+            result = await self.db.execute(
+                select(TenantBackupConfig).where(TenantBackupConfig.enabled == True)
+            )
+            configs = result.scalars().all()
+
+            for cfg in configs:
+                try:
+                    retention = int(cfg.retention_days or 30)
+                except Exception:
+                    retention = 30
+
+                logger.info(f"Purging backups for tenant '{cfg.tenant_schema}' older than {retention} days")
+                try:
+                    prefix = f"backups/tenants/{cfg.tenant_schema}/" if cfg.tenant_schema != '__full__' else "backups/full/"
+                    cutoff_date = datetime.utcnow() - timedelta(days=retention)
+                    paginator = self.list_files(prefix=prefix)
                     
+                    
+                    async for page in paginator:
+                        for file in page.get("Contents", []):
+                            key = file["Key"]
+                            last_modified = file["LastModified"]
+                            
+                            if last_modified < cutoff_date:
+                                logger.info(f"Purging old backup '{key}' for tenant '{cfg.tenant_schema}' last modified on {last_modified}")
+                                self.delete_file(key)
+                                logger.info(f"Deleted old backup '{key}' for tenant '{cfg.tenant_schema}'")
+                                
+                except Exception as e:
+                    logger.error(f"Failed to purge backups for tenant '{cfg.tenant_schema}': {e}")
+
+            logger.info("Completed purge of old backups based on tenant configurations")
+        except Exception as e:
+            logger.error(f"Error while purging old backups: {e}")
+            raise
                     
     # Method to query backup status and history for tenants
     async def get_all_tenant_backups(self):
@@ -315,11 +413,11 @@ class BackupService(ObjectStorageClient):
                     "tenant_id": tenant.id,
                     "tenant_name": tenant.tenant_name,
                     "tenant_schema": tenant.tenant_schema,
-                    # "next_schedule": config.next_backup_at.isoformat() if config and config.next_backup_at else None,
                     "last_backup": latest.completed_at.isoformat() if latest else None,
                     "size_bytes": latest.size_bytes if latest else 0,
                     "status": latest.status if latest else "never_backed_up",
                 })
+                
             return backup_info
         except Exception as e:
             logger.error(f"Error fetching backup info: {str(e)}")
@@ -331,9 +429,12 @@ class BackupService(ObjectStorageClient):
     async def get_tenant_backups(self, tenant_schema: str) -> List[BackupJob]:
         """Get all backups for a specific tenant, ordered by most recent first."""
         try:
+            # Return backups for the tenant from the last 30 days
+            cutoff = datetime.utcnow() - timedelta(days=30)
             result = await self.db.execute(
                 select(BackupJob)
                 .where(BackupJob.tenant_schema == tenant_schema)
+                .where(BackupJob.created_at >= cutoff)
                 .order_by(desc(BackupJob.created_at))
             )
             backups = result.scalars().all()
@@ -374,44 +475,7 @@ class BackupService(ObjectStorageClient):
                 detail="Failed to initiate backup",
             )
             
-    async def delete_backup(self, backup_id: str):
-        """Delete a backup record and its associated file from storage."""
-        try:
-            result = await self.db.execute(
-                select(BackupJob).where(BackupJob.id == UUID(backup_id))
-            )
-            backup = result.scalars().first()
-            
-            if not backup:
-                logger.error(f"Backup '{backup_id}' not found for deletion")
-                raise HTTPException(
-                    status_code=status.HTTP_404_NOT_FOUND,
-                    detail="Backup not found",
-                )
-            
-            if backup.storage_path:
-                self.delete_file(backup.storage_path)
-                logger.info(f"Deleted backup file '{backup.storage_path}' for backup '{backup_id}'")
-            
-            await self.db.delete(backup)
-            await self.db.commit()
-            logger.info(f"Deleted backup record '{backup_id}' from database")
-            return {"message": "Backup deleted successfully"}
-        except HTTPException:
-            raise
-        except ValueError:
-            logger.error(f"Invalid backup ID format: '{backup_id}'")
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Invalid backup ID format",
-            )
-        except Exception as e:
-            logger.error(f"Error deleting backup '{backup_id}': {str(e)}")
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Failed to delete backup",
-            )
-            
+    
     async def restore_backup(self, backup_id: str) -> Dict[str, Any]:
         """Restore a database from a backup file in object storage."""
         try:
@@ -450,49 +514,165 @@ class BackupService(ObjectStorageClient):
                 detail="Failed to restore from backup",
             )
             
-    async def download_backup(self, backup_id: str) -> FileResponse:
-        """Download a backup file from object storage and return the local file path."""
+    async def generate_download_url(self, backup_id: str, admin: str) -> Dict[str, Any]:
+        """Generate a presigned download URL for a backup and write an audit log entry.
+
+        Returns dict with url and expires_in_seconds.
+        """
         try:
             result = await self.db.execute(
                 select(BackupJob).where(BackupJob.id == UUID(backup_id))
             )
-            backup = result.scalars().first()
-            
-            if not backup:
-                logger.error(f"Backup '{backup_id}' not found for download")
-                raise HTTPException(
-                    status_code=status.HTTP_404_NOT_FOUND,
-                    detail="Backup not found",
-                )
-            
-            if not backup.storage_path:
-                logger.error(f"Backup '{backup_id}' has no associated storage path for download")
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="Backup file not found in storage",
-                )
-            
-            local_file_path = self.download_file(backup.storage_path)
-            logger.info(f"Downloaded backup '{backup_id}' to local path '{local_file_path}'")
-            return FileResponse(
-                local_file_path,
-                filename=f"{backup.tenant_schema}_{backup.id}.dump",
-                media_type="application/octet-stream",
-            )
-        
-        except HTTPException:
-            raise
         except ValueError:
-            logger.error(f"Invalid backup ID format: '{backup_id}' for download")
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Invalid backup ID format",
-            )
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid backup ID format")
+
+        backup = result.scalars().first()
+        if not backup:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Backup not found")
+
+        if backup.status != BackupStatus.success:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Backup is not available for download")
+
+        if not backup.storage_path:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Backup has no storage path")
+
+        s3_key = backup.storage_path
+        expires = 300
+
+        # Use ObjectStorageClient helper to generate presigned URL
+        try:
+            url = self.download_url(s3_key, expires=expires)
         except Exception as e:
-            logger.error(f"Error downloading backup '{backup_id}': {str(e)}")
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Failed to download backup",
+            logger.error(f"Failed to generate presigned URL for backup {backup_id}: {str(e)}")
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to generate presigned URL")
+
+        # Write audit log entry
+        try:
+            from src.database.models import AuditLogs
+
+            details = json.dumps({"s3_key": s3_key, "expires_in": expires})
+            audit = AuditLogs(
+                admin=admin,
+                action="backup.download_url_issued",
+                resource=f"backup:{backup_id}",
+                tenant_schema=backup.tenant_schema,
+                details=details,
             )
+            self.db.add(audit)
+            await self.db.commit()
+        except Exception as e:
+            logger.warning(f"Failed to write audit log for backup download URL: {str(e)}")
+
+        return {
+            "url": url,
+            "expires_in_seconds": expires,
+            "warning": "This URL grants temporary access to the backup file and will expire in 300 seconds. Do not share.",
+        }
             
+    @staticmethod
+    def staggered_time(tenant_schema: str) -> dict:
+        """Calculate a staggered time for scheduling backup jobs based on tenant schema."""
+        # Use a hash of the tenant schema to determine a unique time offset
+        hash_value = int(hashlib.sha256(tenant_schema.encode()).hexdigest(), 16)
+        offset_minutes = hash_value % get_settings().BACKUP_WINDOW_MINUTES  # Offset within the backup window
+        hour = (2 + offset_minutes // 60) % 24  # Start at 2 AM UTC plus offset
+        minute = offset_minutes % 60
+        return {
+            "hour": hour,  # Run at calculated hour UTC
+            "minute": minute,  # Run at calculated minute UTC
+        }
+        
+    @staticmethod
+    def register_tenant_backup_job(tenant_schema: str) -> None:
+        """Register a backup job for a tenant with a staggered schedule."""
+        
+        job_id = f"backup_{tenant_schema}"
+        schedule_time = BackupService.staggered_time(tenant_schema)
+        
+        # Remove existing job if it exists
+        existing_job = scheduler.get_job(job_id)
+        if existing_job:
+            scheduler.remove_job(job_id)
+            logger.info(f"Removed existing backup job for tenant '{tenant_schema}'")
+        
+        # Schedule new backup job
+        scheduler.add_job(
+            func=_tenant_backup_job,
+            trigger="cron",
+            id=job_id,
+            **schedule_time,
+            args=[tenant_schema],
+            replace_existing=True,
+        )
+        
+        logger.info(f"Registered backup job for tenant '{tenant_schema}' at {schedule_time['hour']}:{schedule_time['minute']} UTC")
+        
+        
+        
+    @staticmethod
+    def register_full_backup_job() -> None:
+        """Register a full backup job that runs once daily at a fixed time."""
+
+        job_id = "backup_full"
+
+        # Remove existing job if it exists
+        existing_job = scheduler.get_job(job_id)
+        if existing_job:
+            scheduler.remove_job(job_id)
+            logger.info("Removed existing full backup job")
+
+        # Schedule new full backup job to run daily at 0:30 AM UTC
+        scheduler.add_job(
+            func=_full_backup_job,
+            trigger="cron",
+            id=job_id,
+            hour=4,  # Run at 4 AM UTC
+            minute=30,  # Run at 30 minutes past the hour
+            replace_existing=True,
+        )
+        logger.info("Registered full backup job to run daily at 4:30 UTC")
+
+    @staticmethod
+    def unregister_tenant_backup_job(tenant_schema: str) -> None:
+        """Unregister (remove) a scheduled backup job for a tenant schema."""
+        job_id = f"backup_{tenant_schema}"
+        existing_job = scheduler.get_job(job_id)
+        if existing_job:
+            scheduler.remove_job(job_id)
+            logger.info(f"Unregistered backup job for tenant '{tenant_schema}'")
+        else:
+            logger.info(f"No backup job found to unregister for tenant '{tenant_schema}'")
+            
+    
+    @staticmethod
+    async def bootstrap_all_backup_jobs(db: AsyncSession):
+        "On application startup, register backup jobs for all tenants and the full backup job." 
+        from sqlalchemy import select
+        
+        from src.database.models import TenantBackupConfig
+        
+        # Only load tenant configs that are actual tenants (exclude the __full__ marker)
+        result = await db.execute(
+            select(TenantBackupConfig).where(TenantBackupConfig.tenant_schema != "__full__")
+        )
+        tenant_configs = result.scalars().all()
+        for config in tenant_configs:
+            BackupService.register_tenant_backup_job(config.tenant_schema)
+        BackupService.register_full_backup_job()
+        logger.info(f"Bootstrapped backup jobs for {len(tenant_configs)} tenants and full backup")
+        
+
+        
+# Job wrappers that create a fresh AsyncSession and BackupService per invocation
+async def _tenant_backup_job(tenant_schema: str):
+    async with AsyncSessionLocal() as db:
+        service = BackupService(db)
+        await service.run_tenant_backup(tenant_schema)
+
+
+async def _full_backup_job():
+    async with AsyncSessionLocal() as db:
+        service = BackupService(db)
+        await service.run_full_backup()
+                
     

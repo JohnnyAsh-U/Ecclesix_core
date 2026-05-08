@@ -2,14 +2,12 @@
 
 from contextlib import asynccontextmanager
 
-from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from typing import List, AsyncGenerator
+from typing import List
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from fastapi.staticfiles import StaticFiles
 from sqlalchemy import select
-from src.scheduler.backup_scheduler import bootstrap_all_backup_jobs
+from src.services.backup_service import BackupService, scheduler
 from src.core.config import get_settings
 from src.database.session import AsyncSessionLocal, AsyncSessionLocal, engine, Base
 from src.database.models import TenantBackupConfig
@@ -22,9 +20,7 @@ from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
 from prometheus_fastapi_instrumentator import Instrumentator
 import logging
-from src.core.redis_client import redis_client
 from uuid import uuid4
-import asyncio
 
 settings = get_settings()
 
@@ -40,7 +36,7 @@ limiter = Limiter(
     default_limits=["2000/hour", "50/minute"]
 )
 
-scheduler = AsyncIOScheduler()
+# scheduler = AsyncIOScheduler()
 
 # Async function to create tables
 async def init_db():
@@ -56,7 +52,29 @@ async def init_full_backup_config():
         result = await db.execute(
             select(TenantBackupConfig).where(TenantBackupConfig.tenant_schema == "__full__")
         )
+        
+        # Check if public tenant exist
+        public_tenant = await db.execute(
+            select(TenantBackupConfig).where(TenantBackupConfig.tenant_schema == "public")
+        )
+        
+        public_tenant_res = public_tenant.scalars().first()
         config = result.scalars().first()
+        
+        if not public_tenant_res:
+            # Create public tenant with default
+            public_tenant = TenantBackupConfig(
+                id = uuid4(),
+                tenant_name = "Public Schema",
+                tenant_schema = "public",
+                enabled=True,
+                retention_days = 30
+            )
+            db.add(public_tenant)
+            await db.commit()
+            logging.info("Created public schema config")
+        else:
+            logging.info("Public schema config already exists")
         
         if not config:
             # Create __full__ backup config with defaults
@@ -87,7 +105,7 @@ async def lifespan(app: FastAPI):
     logging.info("Django client initialized and connected")
     
     async with AsyncSessionLocal() as db:
-        await bootstrap_all_backup_jobs(db)
+        await BackupService.bootstrap_all_backup_jobs(db)
         
     scheduler.start()
     print("Scheduler started")

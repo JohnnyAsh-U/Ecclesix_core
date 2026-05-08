@@ -102,3 +102,20 @@ class ObjectStorageClient:
         except Exception as e:
             logger.error(f"Unexpected error listing files: {str(e)}")
             raise RuntimeError(f"Failed to list files: {str(e)}")
+
+    def download_url(self, object_name: str, expires: int = 300) -> str:
+        """Generate a presigned GET URL for an object that expires in `expires` seconds."""
+        try:
+            logger.debug(f"Generating presigned URL for {self.bucket_name}/{object_name} (expires={expires})")
+            url = self.s3_client.generate_presigned_url(
+                'get_object',
+                Params={'Bucket': self.bucket_name, 'Key': object_name},
+                ExpiresIn=expires,
+            )
+            return url
+        except ClientError as e:
+            logger.error(f"S3 ClientError generating presigned URL for {object_name}: {str(e)}")
+            raise RuntimeError(f"Failed to generate presigned URL: {str(e)}")
+        except Exception as e:
+            logger.error(f"Unexpected error generating presigned URL for {object_name}: {str(e)}")
+            raise RuntimeError(f"Failed to generate presigned URL: {str(e)}")

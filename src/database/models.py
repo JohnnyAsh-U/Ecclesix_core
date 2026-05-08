@@ -75,6 +75,14 @@ class AuditLogs(Base):
     __tablename__ = "audits"
     
     id = Column(Integer, primary_key=True, index=True)
+    # actor who performed the action (references users.id)
     admin = Column(String(100), nullable=False)
+    # action identifier, e.g. 'backup.download_url_issued'
     action = Column(String(255), nullable=False)
+    # resource acted upon, e.g. 'backup:<backup_id>'
+    resource = Column(String(255), nullable=True)
+    # tenant schema related to the action (if any)
+    tenant_schema = Column(String(100), nullable=True)
+    # JSON metadata as string (s3 key, expires_in, etc.)
+    details = Column(String(1024), nullable=True)
     created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
