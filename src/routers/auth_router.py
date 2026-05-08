@@ -2,7 +2,7 @@ from datetime import timedelta
 from typing import Annotated
 from fastapi import Body, Depends, HTTPException, Request, Request, status, APIRouter, Response, Header
 from src.database.models import Admin
-from src.schemas.roles import ADMIN
+from src.schemas.roles import ADMIN, MOD
 from ..schemas.auth_schema import (
     TokenSchema,
     LoginResponseSchema,
@@ -88,29 +88,29 @@ async def verify_two_factor(
     return {"access_token": result["access_token"], "user": result["user"]}
 
 
-@router.post("/2fa/setup", response_model=TwoFactorSetupResponseSchema, dependencies=[Depends(require_roles(ADMIN))])
+@router.post("/2fa/setup", response_model=TwoFactorSetupResponseSchema, dependencies=[Depends(require_roles(ADMIN, MOD))])
 async def setup_two_factor(
-    current_user=Depends(require_roles(ADMIN)),
+    current_user=Depends(require_roles(ADMIN, MOD)),
     auth_service: AuthService = Depends(get_auth_service),
 ):
     """Generate a TOTP secret and provisioning URL for the current admin."""
     return await auth_service.setup_two_factor(current_user)
 
 
-@router.post("/2fa/enable", dependencies=[Depends(require_roles(ADMIN))])
+@router.post("/2fa/enable", dependencies=[Depends(require_roles(ADMIN, MOD))])
 async def enable_two_factor(
     payload: TwoFactorCodeRequest,
-    current_user=Depends(require_roles(ADMIN)),
+    current_user=Depends(require_roles(ADMIN, MOD)),
     auth_service: AuthService = Depends(get_auth_service),
 ):
     """Enable TOTP 2FA for the current admin after verifying the code."""
     return await auth_service.enable_two_factor(current_user, payload.code)
 
 
-@router.post("/2fa/disable", dependencies=[Depends(require_roles(ADMIN))])
+@router.post("/2fa/disable", dependencies=[Depends(require_roles(ADMIN, MOD))])
 async def disable_two_factor(
     payload: TwoFactorCodeRequest,
-    current_user=Depends(require_roles(ADMIN)),
+    current_user=Depends(require_roles(ADMIN, MOD)),
     auth_service: AuthService = Depends(get_auth_service),
 ):
     """Disable TOTP 2FA for the current admin after verifying the code."""

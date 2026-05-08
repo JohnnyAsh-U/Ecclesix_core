@@ -7,6 +7,7 @@ class UserSchema(BaseModel):
     id: UUID = Field(..., description="The unique identifier of the user")
     username: str = Field(..., description="The user's matricule")
     email: Optional[str] = Field(None, description="The user's email address")
+    phone: Optional[str] = Field(None, description="The user's phone number")
     role: str = Field(..., description="The user's role in the system")
     is_active: bool = Field(..., description="Indicates if the user is active")
     is_2fa_enabled: bool = Field(False, description="Whether TOTP 2FA is enabled for the user")

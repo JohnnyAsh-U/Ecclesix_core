@@ -14,7 +14,6 @@ import {
   FormControl,
   FormField,
   FormItem,
-  FormLabel,
   FormMessage,
 } from '@/components/ui/form'
 import {
@@ -27,8 +26,8 @@ import { useVerify2FAMutation } from '@/hooks/auth.hooks'
 const formSchema = z.object({
   code: z
     .string()
-    .min(6, 'Please enter the 6-digit code')
-    .max(8, 'Code must be at most 8 characters'),
+    .min(6, 'Veuillez entrer le code à 6 chiffres')
+    .max(8, 'Le code doit contenir au maximum 8 caractères'),
 })
 
 interface Verify2FAFormProps extends React.HTMLAttributes<HTMLFormElement> {
@@ -57,7 +56,7 @@ export function Verify2FAForm({
       setTimer((prev) => {
         if (prev <= 1) {
           clearInterval(interval)
-          toast.error('Session expired, please login again')
+          toast.error('Session expirée, veuillez vous reconnecter')
           navigate({ to: '/login', replace: true })
           return 0
         }
@@ -66,7 +65,7 @@ export function Verify2FAForm({
     }, 2000)
 
     return () => clearInterval(interval)
-  }, [navigate])
+  }, [])
 
   async function onSubmit(data: z.infer<typeof formSchema>) {
     try {
@@ -75,13 +74,13 @@ export function Verify2FAForm({
         code: data.code,
       })
 
-      toast.success('Two-factor authentication verified')
+      toast.success('Authentification à deux facteurs vérifiée')
       navigate({
-        to: redirectTo || '/_authenticated/',
+        to: '/',
         replace: true,
       })
     } catch (error: any) {
-      const errorMessage = error?.response?.data?.detail || '2FA verification failed'
+      const errorMessage = error?.response?.data?.detail || 'Échec de la vérification 2FA'
       toast.error(errorMessage)
       form.reset()
     }
@@ -102,36 +101,37 @@ export function Verify2FAForm({
           name='code'
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Verification Code</FormLabel>
-              <FormControl>
-                <InputOTP maxLength={6} {...field}>
-                  <InputOTPGroup>
-                    <InputOTPSlot index={0} />
-                    <InputOTPSlot index={1} />
-                    <InputOTPSlot index={2} />
-                    <InputOTPSlot index={3} />
-                    <InputOTPSlot index={4} />
-                    <InputOTPSlot index={5} />
-                  </InputOTPGroup>
-                </InputOTP>
+              <FormControl className='w-full'>
+                <div className='flex justify-center'>
+                  <InputOTP maxLength={6} {...field}>
+                    <InputOTPGroup>
+                      <InputOTPSlot index={0} />
+                      <InputOTPSlot index={1} />
+                      <InputOTPSlot index={2} />
+                      <InputOTPSlot index={3} />
+                      <InputOTPSlot index={4} />
+                      <InputOTPSlot index={5} />
+                    </InputOTPGroup>
+                  </InputOTP>
+                </div>
               </FormControl>
               <FormMessage />
               <p className='text-xs text-muted-foreground mt-2'>
-                Enter the 6-digit code from your authenticator app
+                Entrez le code à 6 chiffres de votre application d'authentification
               </p>
             </FormItem>
           )}
         />
 
         <div className='text-center text-sm text-muted-foreground'>
-          Code expires in {minutes}:{seconds.toString().padStart(2, '0')}
+          Code expire dans {minutes}:{seconds.toString().padStart(2, '0')}
         </div>
 
         <Button disabled={verify2FAMutation.isPending}>
           {verify2FAMutation.isPending && (
             <Loader2 className='animate-spin' />
           )}
-          Verify
+          Verifier
         </Button>
       </form>
     </Form>

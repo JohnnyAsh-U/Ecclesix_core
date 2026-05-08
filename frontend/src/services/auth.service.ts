@@ -1,11 +1,14 @@
 // src/services/auth.service.ts
 import api from '@/config/api'
-import { LoginUrl, LogoutUrl, MeUrl, Setup2FAUrl, Verify2FAUrl } from '@/utils/constant'
+import { ChangePasswordUrl, Disable2FAUrl, Enable2FAUrl, LoginUrl, LogoutUrl, MeUrl, Setup2FAUrl, Verify2FAUrl } from '@/utils/constant'
 
 export interface User {
   id: string
   username: string
   email: string
+  is_2fa_enabled: boolean
+  phone: string
+  role: string
   // add your user fields
 }
 
@@ -26,6 +29,17 @@ export interface Setup2FAResponse {
 
 export interface Enable2FAResponse {
   message: string
+}
+
+export interface ChangePasswordRequest {
+  old_password: string
+  new_password: string
+}
+
+export interface UpdateProfileRequest {
+  email?: string
+  phone?: string
+  username?: string
 }
 
 export const authService = {
@@ -51,12 +65,22 @@ export const authService = {
   },
 
   enableTwoFactor: async (code: string): Promise<Enable2FAResponse> => {
-    const { data } = await api.post('/auth/2fa/enable', { code })
+    const { data } = await api.post(Enable2FAUrl, { code })
     return data
   },
 
   disableTwoFactor: async (code: string): Promise<Enable2FAResponse> => {
-    const { data } = await api.post('/auth/2fa/disable', { code })
+    const { data } = await api.post(Disable2FAUrl, { code })
+    return data
+  },
+
+  changePassword: async (payload: ChangePasswordRequest): Promise<{ message: string }> => {
+    const { data } = await api.post(ChangePasswordUrl, payload)
+    return data
+  },
+
+  updateProfile: async (payload: UpdateProfileRequest): Promise<User> => {
+    const { data } = await api.put(MeUrl, payload)
     return data
   },
 

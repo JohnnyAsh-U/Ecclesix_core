@@ -21,7 +21,6 @@ import { Route as errors401RouteImport } from './routes/(errors)/401'
 import { Route as AuthenticatedTenantsIndexRouteImport } from './routes/_authenticated/tenants/index'
 import { Route as AuthenticatedSupportIndexRouteImport } from './routes/_authenticated/support/index'
 import { Route as AuthenticatedStorageIndexRouteImport } from './routes/_authenticated/storage/index'
-import { Route as AuthenticatedSettingsIndexRouteImport } from './routes/_authenticated/settings/index'
 import { Route as AuthenticatedProfilIndexRouteImport } from './routes/_authenticated/profil/index'
 import { Route as AuthenticatedMigrationsIndexRouteImport } from './routes/_authenticated/migrations/index'
 import { Route as AuthenticatedMetricsIndexRouteImport } from './routes/_authenticated/metrics/index'
@@ -91,12 +90,6 @@ const AuthenticatedStorageIndexRoute =
     path: '/storage/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
-const AuthenticatedSettingsIndexRoute =
-  AuthenticatedSettingsIndexRouteImport.update({
-    id: '/settings/',
-    path: '/settings/',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
 const AuthenticatedProfilIndexRoute =
   AuthenticatedProfilIndexRouteImport.update({
     id: '/profil/',
@@ -155,7 +148,6 @@ export interface FileRoutesByFullPath {
   '/metrics/': typeof AuthenticatedMetricsIndexRoute
   '/migrations/': typeof AuthenticatedMigrationsIndexRoute
   '/profil/': typeof AuthenticatedProfilIndexRoute
-  '/settings/': typeof AuthenticatedSettingsIndexRoute
   '/storage/': typeof AuthenticatedStorageIndexRoute
   '/support/': typeof AuthenticatedSupportIndexRoute
   '/tenants/': typeof AuthenticatedTenantsIndexRoute
@@ -175,7 +167,6 @@ export interface FileRoutesByTo {
   '/metrics': typeof AuthenticatedMetricsIndexRoute
   '/migrations': typeof AuthenticatedMigrationsIndexRoute
   '/profil': typeof AuthenticatedProfilIndexRoute
-  '/settings': typeof AuthenticatedSettingsIndexRoute
   '/storage': typeof AuthenticatedStorageIndexRoute
   '/support': typeof AuthenticatedSupportIndexRoute
   '/tenants': typeof AuthenticatedTenantsIndexRoute
@@ -198,7 +189,6 @@ export interface FileRoutesById {
   '/_authenticated/metrics/': typeof AuthenticatedMetricsIndexRoute
   '/_authenticated/migrations/': typeof AuthenticatedMigrationsIndexRoute
   '/_authenticated/profil/': typeof AuthenticatedProfilIndexRoute
-  '/_authenticated/settings/': typeof AuthenticatedSettingsIndexRoute
   '/_authenticated/storage/': typeof AuthenticatedStorageIndexRoute
   '/_authenticated/support/': typeof AuthenticatedSupportIndexRoute
   '/_authenticated/tenants/': typeof AuthenticatedTenantsIndexRoute
@@ -220,7 +210,6 @@ export interface FileRouteTypes {
     | '/metrics/'
     | '/migrations/'
     | '/profil/'
-    | '/settings/'
     | '/storage/'
     | '/support/'
     | '/tenants/'
@@ -240,7 +229,6 @@ export interface FileRouteTypes {
     | '/metrics'
     | '/migrations'
     | '/profil'
-    | '/settings'
     | '/storage'
     | '/support'
     | '/tenants'
@@ -262,7 +250,6 @@ export interface FileRouteTypes {
     | '/_authenticated/metrics/'
     | '/_authenticated/migrations/'
     | '/_authenticated/profil/'
-    | '/_authenticated/settings/'
     | '/_authenticated/storage/'
     | '/_authenticated/support/'
     | '/_authenticated/tenants/'
@@ -365,13 +352,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedStorageIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/settings/': {
-      id: '/_authenticated/settings/'
-      path: '/settings'
-      fullPath: '/settings/'
-      preLoaderRoute: typeof AuthenticatedSettingsIndexRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
     '/_authenticated/profil/': {
       id: '/_authenticated/profil/'
       path: '/profil'
@@ -432,7 +412,6 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedMetricsIndexRoute: typeof AuthenticatedMetricsIndexRoute
   AuthenticatedMigrationsIndexRoute: typeof AuthenticatedMigrationsIndexRoute
   AuthenticatedProfilIndexRoute: typeof AuthenticatedProfilIndexRoute
-  AuthenticatedSettingsIndexRoute: typeof AuthenticatedSettingsIndexRoute
   AuthenticatedStorageIndexRoute: typeof AuthenticatedStorageIndexRoute
   AuthenticatedSupportIndexRoute: typeof AuthenticatedSupportIndexRoute
   AuthenticatedTenantsIndexRoute: typeof AuthenticatedTenantsIndexRoute
@@ -446,7 +425,6 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedMetricsIndexRoute: AuthenticatedMetricsIndexRoute,
   AuthenticatedMigrationsIndexRoute: AuthenticatedMigrationsIndexRoute,
   AuthenticatedProfilIndexRoute: AuthenticatedProfilIndexRoute,
-  AuthenticatedSettingsIndexRoute: AuthenticatedSettingsIndexRoute,
   AuthenticatedStorageIndexRoute: AuthenticatedStorageIndexRoute,
   AuthenticatedSupportIndexRoute: AuthenticatedSupportIndexRoute,
   AuthenticatedTenantsIndexRoute: AuthenticatedTenantsIndexRoute,

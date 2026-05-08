@@ -43,13 +43,14 @@ export const useLoginMutation = () => {
 
 // ---- 2FA Verify ----
 export const useVerify2FAMutation = () => {
-  const { updateToken, setUser } = useAuthStore()
+  const { updateToken, setUser, setAuth } = useAuthStore()
 
   return useMutation({
     mutationFn: ({ tempToken, code }: { tempToken: string; code: string }) =>
       authService.verifyTwoFactor(tempToken, code),
 
     onSuccess: (data) => {
+      setAuth(data.user!, data.access_token!)
       updateToken(data.access_token)
       setUser(data.user)
     },
@@ -81,6 +82,27 @@ export const useDisable2FAMutation = () => {
 
   return useMutation({
     mutationFn: (code: string) => authService.disableTwoFactor(code),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['auth', 'me'] })
+    },
+  })
+}
+
+// ---- Change Password ----
+export const useChangePasswordMutation = () => {
+  return useMutation({
+    mutationFn: (payload: { old_password: string; new_password: string }) =>
+      authService.changePassword(payload),
+  })
+}
+
+// ---- Update Profile ----
+export const useUpdateProfileMutation = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (payload: { email?: string; phone?: string; username?: string }) =>
+      authService.updateProfile(payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['auth', 'me'] })
     },
