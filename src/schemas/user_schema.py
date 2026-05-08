@@ -1,6 +1,7 @@
 from pydantic import BaseModel, Field
 from typing import Optional
 from uuid import UUID
+from datetime import datetime
 
 
 class UserSchema(BaseModel):
@@ -12,6 +13,7 @@ class UserSchema(BaseModel):
     is_active: bool = Field(..., description="Indicates if the user is active")
     is_2fa_enabled: bool = Field(False, description="Whether TOTP 2FA is enabled for the user")
     has_totp_secret: bool = Field(False, description="Whether a TOTP secret has been configured")
+    created_at: datetime = Field(..., description="The timestamp when the user was created")
 
     class Config:
         from_attributes = True
@@ -29,14 +31,14 @@ class UserSchema(BaseModel):
 
 class CreateUserSchema(BaseModel):
     username: str = Field(..., description="The user's matricule")
-    password: str = Field(..., description="Plain text password for the user")
+    phone: str = Field(..., description="Phone number for the user")
     email: Optional[str] = Field(None, description="Optional email address")
 
     class Config:
         json_schema_extra = {
             "example": {
                 "username": "EMP12345",
-                "password": "secret-pass",
+                "phone": "123-456-7890",
                 "email": "user@example.com",
             }
         }

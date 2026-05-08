@@ -2,6 +2,7 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from typing import AsyncGenerator, Optional
 from sqlalchemy.ext.asyncio import AsyncSession
+from src.services.audit_service import AuditService
 from src.core.django_client import DjangoClient
 from src.database.models import Admin
 from src.core.security import security_manager
@@ -94,3 +95,7 @@ def get_backup_service(db: AsyncSession = Depends(get_db)):
     from src.services.backup_service import BackupService
 
     return BackupService(db)
+
+
+async def get_audit_service(db: AsyncSession = Depends(get_db)) -> AuditService:
+    return AuditService(db)

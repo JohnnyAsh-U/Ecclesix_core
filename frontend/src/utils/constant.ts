@@ -49,3 +49,16 @@ export const BackupDeleteUrl = (backupId: string) => `${BackupUrl}/${backupId}`
 export const BackupRestoreUrl = (backupId: string) => `${BackupUrl}/${backupId}/restore`
 export const BackupDownloadUrl = (backupId: string) => `${BackupUrl}/${backupId}/download-url`
 export const BackupPurgeUrl = `${BackupUrl}/purge`
+
+
+// User Endpoints (internal)
+export const UserUrl = "/users"
+export const UserActivateUrl = (userId: string) => `${UserUrl}/${userId}/activate`
+export const UserDeactivateUrl = (userId: string) => `${UserUrl}/${userId}/deactivate`
+export const UserDeleteUrl = (userId: string) => `${UserUrl}/${userId}`
+export const UserUpdateUrl = (userId: string) => `${UserUrl}/${userId}`
+
+// Audit Endpoints (internal)
+export const AuditLogsUrl = "/audit-logs"
+export const AuditLogUrl = (logId: number) => `${AuditLogsUrl}/${logId}`
+export const AuditLogsByAdminUrl = (adminName: string) => `${AuditLogsUrl}/admin/${adminName}`

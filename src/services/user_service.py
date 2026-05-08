@@ -11,7 +11,7 @@ class UserService:
     def __init__(self, db: AsyncSession):
         self.db = db
 
-    async def create_user(self, username: str, password: str, email: str | None = None, role: Roles = Roles.mod) -> Admin:
+    async def create_user(self, username: str, phone: str, email: str | None = None, role: Roles = Roles.mod) -> Admin:
         # prevent duplicate username
         result = await self.db.execute(select(Admin).where(Admin.username == username))
         if result.scalars().first():
@@ -21,12 +21,16 @@ class UserService:
             result = await self.db.execute(select(Admin).where(Admin.email == email))
             if result.scalars().first():
                 raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email already exists")
+            
+        default_password = "1234"
+        hashed_password = security_manager.get_password_hash(default_password)
 
         user = Admin(
             id=uuid4(),
             username=username,
             email=email or "",
-            password=security_manager.get_password_hash(password),
+            phone=phone,
+            password=hashed_password,
             role=role,
             is_active=True,
         )
@@ -36,7 +40,7 @@ class UserService:
         return user
 
     async def delete_user(self, user_id) -> dict:
-        result = await self.db.execute(select(Admin).where(Admin.id == user_id))
+        result = await self.db.execute(select(Admin).where(Admin.id == user_id, Admin.role != Roles.admin))
         user = result.scalars().first()
         if user is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
@@ -46,7 +50,7 @@ class UserService:
         return {"message": "User deleted successfully."}
 
     async def deactivate_user(self, user_id) -> Admin:
-        result = await self.db.execute(select(Admin).where(Admin.id == user_id))
+        result = await self.db.execute(select(Admin).where(Admin.id == user_id, Admin.role != Roles.admin))
         user = result.scalars().first()
         if user is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
@@ -58,7 +62,7 @@ class UserService:
         return user
 
     async def reactivate_user(self, user_id) -> Admin:
-        result = await self.db.execute(select(Admin).where(Admin.id == user_id))
+        result = await self.db.execute(select(Admin).where(Admin.id == user_id, Admin.role != Roles.admin))
         user = result.scalars().first()
         if user is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
@@ -73,9 +77,25 @@ class UserService:
         query = select(Admin).where(Admin.role != Roles.admin)  # Exclude admin users from the list
         if only_active is not None:
             if only_active:
-                query = select(Admin).where(Admin.is_active == True)
+                query = select(Admin).where(Admin.is_active == True, Admin.role != Roles.admin)
             else:
-                query = select(Admin).where((Admin.is_active == False))
+                query = select(Admin).where(Admin.is_active == False, Admin.role != Roles.admin)
 
         result = await self.db.execute(query)
         return result.scalars().all()
+    
+    
+    async def update_user(self, user_id, **kwargs) -> Admin:
+        result = await self.db.execute(select(Admin).where(Admin.id == user_id, Admin.role != Roles.admin))
+        user = result.scalars().first()
+        if user is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+
+        for key, value in kwargs.items():
+            if hasattr(user, key) and value is not None:
+                setattr(user, key, value)
+
+        self.db.add(user)
+        await self.db.commit()
+        await self.db.refresh(user)
+        return user
