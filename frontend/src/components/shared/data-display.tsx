@@ -5,7 +5,7 @@
 
 import type { ReactNode } from 'react'
 import { Badge } from '@/components/ui/badge'
-import { getStatusBadgeVariant, truncateText } from '@/lib/utils-control-plane'
+import { getStatusBadgeVariant } from '@/lib/utils-control-plane'
 
 export interface DataTableColumn<T> {
   key: string

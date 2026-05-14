@@ -66,20 +66,20 @@ class ApiService {
     for (let i = 0; i < 50; i++) {
       const tenant = this.tenants[i]
       this.subscriptions.push(
-        generateMockSubscription(i, tenant.id, tenant.name)
+        generateMockSubscription(i, String(tenant.id), tenant.name || '')
       )
     }
 
     // Generate invoices
     for (let i = 0; i < 200; i++) {
       const tenant = this.tenants[i % this.tenants.length]
-      this.invoices.push(generateMockInvoice(i, tenant.id, tenant.name))
+      this.invoices.push(generateMockInvoice(i, String(tenant.id), tenant.name || ''  ))
     }
 
     // Generate backups
     for (let i = 0; i < 150; i++) {
       const tenant = this.tenants[i % this.tenants.length]
-      this.backups.push(generateMockBackup(i, tenant.id, tenant.name))
+      this.backups.push(generateMockBackup(i, String(tenant.id), tenant.name || ''))
     }
 
     // Generate emails
@@ -116,9 +116,9 @@ class ApiService {
       const query = search.toLowerCase()
       filtered = filtered.filter(
         (t) =>
-          t.name.toLowerCase().includes(query) ||
-          t.email.toLowerCase().includes(query) ||
-          t.domain.toLowerCase().includes(query)
+          (t.name || '').toLowerCase().includes(query) ||
+          (t.email || '').toLowerCase().includes(query) ||
+          (t.domain || '').toLowerCase().includes(query)
       )
     }
 
@@ -141,7 +141,7 @@ class ApiService {
   async getTenantById(tenantId: string): Promise<TenantDetail> {
     await delay(this.baseDelay)
 
-    const tenant = this.tenants.find((t) => t.id === tenantId)
+    const tenant = this.tenants.find((t) => t.id === Number(tenantId))
     if (!tenant) throw new Error('Tenant not found')
 
     return generateMockTenantDetail(tenant)
@@ -154,7 +154,7 @@ class ApiService {
   ): Promise<Tenant> {
     await delay(this.baseDelay + 200)
 
-    const tenant = this.tenants.find((t) => t.id === tenantId)
+    const tenant = this.tenants.find((t) => t.id === Number(tenantId))
     if (!tenant) throw new Error('Tenant not found')
 
     tenant.status = status as any
@@ -170,7 +170,7 @@ class ApiService {
   async impersonateTenant(tenantId: string): Promise<{ token: string; redirectUrl: string }> {
     await delay(this.baseDelay + 100)
 
-    const tenant = this.tenants.find((t) => t.id === tenantId)
+    const tenant = this.tenants.find((t) => t.id === Number(tenantId))
     if (!tenant) throw new Error('Tenant not found')
 
     return {
@@ -182,7 +182,7 @@ class ApiService {
   async changeTenantPlan(tenantId: string, newPlan: string): Promise<Tenant> {
     await delay(this.baseDelay + 200)
 
-    const tenant = this.tenants.find((t) => t.id === tenantId)
+    const tenant = this.tenants.find((t) => t.id === Number(tenantId))
     if (!tenant) throw new Error('Tenant not found')
 
     tenant.plan = newPlan as any
@@ -194,7 +194,7 @@ class ApiService {
   async deleteTenant(tenantId: string): Promise<{ success: boolean }> {
     await delay(this.baseDelay + 300)
 
-    const index = this.tenants.findIndex((t) => t.id === tenantId)
+    const index = this.tenants.findIndex((t) => t.id === Number(tenantId))
     if (index === -1) throw new Error('Tenant not found')
 
     this.tenants.splice(index, 1)
@@ -319,13 +319,13 @@ class ApiService {
   async createBackup(tenantId: string): Promise<Backup> {
     await delay(this.baseDelay + 500)
 
-    const tenant = this.tenants.find((t) => t.id === tenantId)
+    const tenant = this.tenants.find((t) => t.id == Number(tenantId))
     if (!tenant) throw new Error('Tenant not found')
 
     const backup: Backup = {
       id: `backup_${Date.now()}`,
       tenantId,
-      tenantName: tenant.name,
+      tenantName: tenant.name ?? '',
       type: 'manual',
       status: 'completed',
       sizeGB: Math.floor(Math.random() * 50) + 1,

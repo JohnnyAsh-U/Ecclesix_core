@@ -68,35 +68,39 @@ export function generateMockTenant(index: number): Tenant {
   const domain = DOMAINS[index % DOMAINS.length]
 
   return {
-    id: `tenant_${index}`,
-    name: `${name} ${index > 0 ? `- Branch ${Math.floor(index / 2)}` : ''}`.trim(),
-    email: `admin@${domain}`,
-    domain: `${name.toLowerCase().replace(/\s+/g, '-')}-${index}.${domain}`,
-    subdomain: `${name.toLowerCase().replace(/\s+/g, '-')}-${index}`,
-    status,
-    plan,
-    usersCount: Math.floor(Math.random() * 500) + 5,
-    storageUsedGB: Math.floor(Math.random() * 50) + 1,
-    storageQuotaGB: plan === 'starter' ? 50 : plan === 'professional' ? 500 : 2000,
-    lastLoginAt:
-      Math.random() > 0.2
-        ? new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString()
-        : null,
-    createdAt: new Date(
-      Date.now() - Math.random() * 365 * 24 * 60 * 60 * 1000
-    ).toISOString(),
-    updatedAt: new Date().toISOString(),
-    suspendedAt:
-      status === 'suspended'
-        ? new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString()
-        : null,
-    suspendedReason:
-      status === 'suspended'
-        ? Math.random() > 0.5
-          ? 'Payment overdue'
-          : 'Policy violation'
-        : null,
-  }
+  id: index,
+  name: `${name} ${index > 0 ? `- Branch ${Math.floor(index / 2)}` : ''}`.trim(),
+  email: `admin@${domain}`,
+  domain: `${name.toLowerCase().replace(/\s+/g, '-')}-${index}.${domain}`,
+  subdomain: `${name.toLowerCase().replace(/\s+/g, '-')}-${index}`,
+  status,
+  plan,
+  usersCount: Math.floor(Math.random() * 500) + 5,
+  storageUsedGB: Math.floor(Math.random() * 50) + 1,
+  storageQuotaGB: plan === 'starter' ? 50 : plan === 'professional' ? 500 : 2000,
+  lastLoginAt: Math.random() > 0.2
+    ? new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString()
+    : null,
+  createdAt: new Date(
+    Date.now() - Math.random() * 365 * 24 * 60 * 60 * 1000
+  ).toISOString(),
+  updatedAt: new Date().toISOString(),
+  suspendedAt: status === 'suspended'
+    ? new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString()
+    : null,
+  suspendedReason: status === 'suspended'
+    ? Math.random() > 0.5
+      ? 'Payment overdue'
+      : 'Policy violation'
+    : null,
+  church_name: '',
+  domains: [],
+  is_active: false,
+  church_count: 0,
+  member_count: 0,
+  custom_logo: false,
+  phone: ''
+}
 }
 
 export function generateMockTenantDetail(tenant: Tenant): TenantDetail {
@@ -105,11 +109,11 @@ export function generateMockTenantDetail(tenant: Tenant): TenantDetail {
     adminUser: {
       id: `user_${tenant.id}`,
       name: 'Pastor John Smith',
-      email: tenant.email,
+      email: tenant.email || `admin@${tenant.domain}`,
     },
     billingEmail: `billing@${tenant.domain}`,
     supportEmail: `support@${tenant.domain}`,
-    organization: tenant.name,
+    organization: tenant.name || `Organization ${tenant.id}`,
     website: `https://${tenant.domain}`,
     databaseSchema: `schema_${tenant.id}`,
     backupRetentionDays: tenant.plan === 'starter' ? 7 : tenant.plan === 'professional' ? 30 : 90,
@@ -341,12 +345,9 @@ export function generateMockActivityFeedItem(index: number): ActivityFeedItem {
     'billing_updated',
     'backup_completed',
     'admin_login',
-    'invoice_issued',
-    'invoice_paid',
-    'plan_upgraded',
   ] as const
 
-  const type = types[Math.floor(Math.random() * types.length)]
+  const type = types[Math.floor(Math.random() * types.length)] as ActivityFeedItem['type']
 
   const descriptions: Record<string, string> = {
     tenant_created: 'New tenant registered',
@@ -355,9 +356,6 @@ export function generateMockActivityFeedItem(index: number): ActivityFeedItem {
     billing_updated: 'Billing information updated',
     backup_completed: 'Backup completed successfully',
     admin_login: 'Admin logged in',
-    invoice_issued: 'Invoice generated',
-    invoice_paid: 'Payment received',
-    plan_upgraded: 'Plan upgraded to Enterprise',
   }
 
   return {
@@ -370,9 +368,9 @@ export function generateMockActivityFeedItem(index: number): ActivityFeedItem {
     subject: {
       type: 'tenant',
       id: `tenant_${Math.floor(Math.random() * 100)}`,
-      name: TENANT_NAMES[index % TENANT_NAMES.length],
+      name: TENANT_NAMES[index % TENANT_NAMES.length] || `Tenant ${index}`,
     },
-    description: descriptions[type],
+    description: descriptions[type] ?? 'Activity recorded',
     timestamp: new Date(
       Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000
     ).toISOString(),

@@ -3,7 +3,6 @@
  * Reusable filters for tables and lists
  */
 
-import { useState } from 'react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -281,7 +280,6 @@ interface BulkActionToolbarProps {
 export function BulkActionToolbar({
   selectedCount,
   actions,
-  onSelectAll,
   onClearSelection,
 }: BulkActionToolbarProps) {
   if (selectedCount === 0) return null

@@ -64,7 +64,15 @@ export function EditPlanForm({ open, onOpenChange, plan }: EditPlanFormProps) {
   const onSubmit = async (values: FormValues) => {
     if (!plan) return
     try {
-      await updatePlan.mutateAsync({ planId: plan.id, payload: values })
+      await updatePlan.mutateAsync({ planId: plan.id, payload: {
+        code: values.code,
+        name: values.name,
+        price: values.price,
+        annual_price: values.annual_price || 0,
+        currency: values.currency,
+        max_churches: values.max_churches,
+        max_members: values.max_members,
+      } })
       onOpenChange(false)
     } catch (e) {
       // handled by hook
