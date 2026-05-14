@@ -139,7 +139,7 @@ export function SubscriptionsTable() {
       <PaymentModal open={paymentOpen} onOpenChange={setPaymentOpen} bill={selectedBill} mode={paymentMode} />
       <ChangePlanDialog open={changePlanOpen} onOpenChange={setChangePlanOpen} bill={selectedBill} />
     </div>
-      
+
   )
 }
 
@@ -348,54 +348,54 @@ export function PlansGrid() {
   }
 
   if (isLoading) return <TableSkeleton rows={2} />
-  if (!plans || plans.length === 0) {
-    return <div className="text-center py-8 text-gray-600">Aucun plan trouvé</div>
-  }
 
   return (
     <>
+
       <div className="flex items-center justify-end mb-4">
         <Button onClick={handleOpenCreate}>+ Créer un plan</Button>
       </div>
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-        {plans?.map((plan) => (
-          <div key={plan.id} className="border rounded-lg p-6 hover:border-blue-500 transition-colors">
-            <div className="flex justify-between items-start">
-              <div>
-                <h3 className="font-semibold text-lg mb-2">{plan.code}</h3>
-                <p className="text-gray-600 text-sm mb-2">{plan.name}</p>
+      {plans && plans?.length == 0 && <div className="text-center py-8 text-gray-600">Aucun plan trouvé</div>}
+      {plans && plans?.length > 0 && (
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+          {plans?.map((plan) => (
+            <div key={plan.id} className="border rounded-lg p-6 hover:border-blue-500 transition-colors">
+              <div className="flex justify-between items-start">
+                <div>
+                  <h3 className="font-semibold text-lg mb-2">{plan.code}</h3>
+                  <p className="text-gray-600 text-sm mb-2">{plan.name}</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button variant="ghost" size="sm" onClick={() => handleOpenEdit(plan)} aria-label="Modifier">
+                    <Edit className="h-4 w-4" />
+                  </Button>
+                  <Button variant="destructive" size="sm" onClick={() => handleOpenDelete(plan)} aria-label="Supprimer">
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
-              <div className="flex items-center gap-2">
-                <Button variant="ghost" size="sm" onClick={() => handleOpenEdit(plan)} aria-label="Modifier">
-                  <Edit className="h-4 w-4" />
-                </Button>
-                <Button variant="destructive" size="sm" onClick={() => handleOpenDelete(plan)} aria-label="Supprimer">
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
 
-            <div className="space-y-3 mb-4 mt-4">
-              <div>
-                <p className="text-2xl font-bold">
-                  {Number(plan.price).toLocaleString('fr-FR')} {plan.currency}
-                  <span className="text-sm text-gray-600 font-normal">/mois</span>
-                </p>
-                {plan.annual_price && (
-                  <p className="text-sm text-gray-500">
-                    {Number(plan.annual_price).toLocaleString('fr-FR')} {plan.currency}/an
+              <div className="space-y-3 mb-4 mt-4">
+                <div>
+                  <p className="text-2xl font-bold">
+                    {Number(plan.price).toLocaleString('fr-FR')} {plan.currency}
+                    <span className="text-sm text-gray-600 font-normal">/mois</span>
                   </p>
-                )}
-              </div>
+                  {plan.annual_price && (
+                    <p className="text-sm text-gray-500">
+                      {Number(plan.annual_price).toLocaleString('fr-FR')} {plan.currency}/an
+                    </p>
+                  )}
+                </div>
 
-              <ul className="space-y-2 text-sm">
-                <li className="text-gray-700">✓ {plan.max_churches} églises</li>
-                <li className="text-gray-700">✓ {plan.max_members} membres</li>
-              </ul>
+                <ul className="space-y-2 text-sm">
+                  <li className="text-gray-700">✓ {plan.max_churches} églises</li>
+                  <li className="text-gray-700">✓ {plan.max_members} membres</li>
+                </ul>
+              </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>)}
 
       <CreatePlanForm open={createOpen} onOpenChange={setCreateOpen} />
       <EditPlanForm open={editOpen} onOpenChange={setEditOpen} plan={selectedPlan} />
@@ -462,9 +462,9 @@ export default function Billing() {
 
         <TabsContent value='plans' className='space-y-4'>
           <>
-              <div className="mb-4 flex items-center justify-between">
-                <p className="text-sm text-gray-600">Plans de facturation disponibles</p>
-              </div>
+            <div className="mb-4 flex items-center justify-between">
+              <p className="text-sm text-gray-600">Plans de facturation disponibles</p>
+            </div>
             <PlansGrid />
           </>
         </TabsContent>
