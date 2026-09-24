@@ -1,0 +1,22 @@
+{
+  "header": {
+    "english": "English",
+    "french": "French",
+    "nav": {
+      "home": "Home",
+      "settings": "Settings"
+    }
+  },
+  "sidebar": {
+    "general": "General",
+    "dashboard": "Dashboard",
+    "tenants": "Tenants",
+    "billings": "Billings",
+    "migrations": "Migrations",
+    "backups": "Backups",
+    "storage": "Storage",
+    "support": "Support",
+    "metrics": "Metrics",
+    "admins": "Administrators"
+  }
+}

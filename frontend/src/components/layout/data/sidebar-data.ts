@@ -12,7 +12,7 @@ import {
 import { type SidebarData } from '../types'
 import { useAuthStore } from '@/stores/auth.store'
 
-export const sidebarData = (): SidebarData => {
+export const sidebarData = (t: any): SidebarData => {
   return {
     user: {
       name: useAuthStore().user?.username || '',
@@ -21,50 +21,50 @@ export const sidebarData = (): SidebarData => {
     },
     navGroups: [
       {
-        title: 'Général',
+        title: t('sidebar.general'),
         items: [
           // {
-          //   title: 'Tableau de bord',
+          //   title: t('sidebar.dashboard'),
           //   url: '/dashboard',
           //   icon: LayoutDashboard,
           // },
           {
-            title: 'Clients',
+            title: t('sidebar.tenants'),
             url: '/tenants',
             icon: Building2,
           },
           {
-            title: 'Facturation',
+            title: t('sidebar.billings'),
             url: '/billings',
             icon: CreditCard,
           },
           {
-            title: 'Migrations',
+            title: t('sidebar.migrations'),
             url: '/migrations',
             icon: DatabaseIcon,
           },
           {
-            title: 'Sauvegardes',
+            title: t('sidebar.backups'),
             url: '/backups',
             icon: HardDrive,
           },
           {
-            title: 'Stockage',
+            title: t('sidebar.storage'),
             url: '/storage',
             icon: Database,
           },
           // {
-          //   title: 'Assistance',
+          //   title: t('sidebar.support'),
           //   url: '/support',
           //   icon: Mail,
           // },
           // {
-          //   title: 'Statistiques',
+          //   title: t('sidebar.metrics'),
           //   url: '/metrics',
           //   icon: BarChart3,
           // },
           {
-            title: 'Administrateurs',
+            title: t('sidebar.admins'),
             url: '/admins',
             icon: Shield,
           },

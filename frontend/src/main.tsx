@@ -6,6 +6,7 @@ import './styles/index.css'
 import { ThemeProvider } from './context/theme-provider'
 import { QueryClientProvider, QueryClient } from '@tanstack/react-query'
 import { AuthProvider } from './context/auth-provider'
+import './i18n'
 
 
 const queryClient = new QueryClient()
@@ -16,7 +17,7 @@ const router = createRouter({
   context: { queryClient },
   defaultPreload: 'intent',
   defaultPreloadStaleTime: 0
-})
+} as any)
 
 
 declare module '@tanstack/react-router' {

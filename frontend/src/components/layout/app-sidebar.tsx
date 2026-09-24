@@ -10,8 +10,10 @@ import { sidebarData } from './data/sidebar-data'
 import { NavGroup } from './nav-group'
 import { NavUser } from './nav-user'
 import { AppTitle } from './app-title'
+import { useTranslation } from 'react-i18next'
 
 export function AppSidebar() {
+  const { t } = useTranslation();
   return (
     <Sidebar collapsible={"offcanvas"} variant={"inset"}>
       <SidebarHeader>
@@ -23,7 +25,7 @@ export function AppSidebar() {
         {/* <AppTitle /> */}
       </SidebarHeader>
       <SidebarContent>
-        {sidebarData().navGroups.map((props: { title: any, items: any[] }) => (
+        {sidebarData(t).navGroups.map((props: { title: any, items: any[] }) => (
           <NavGroup key={props.title} {...props} />
         ))}
       </SidebarContent>

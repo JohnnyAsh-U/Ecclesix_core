@@ -1,0 +1,22 @@
+{
+  "header": {
+    "english": "Anglais",
+    "french": "Français",
+    "nav": {
+      "home": "Accueil",
+      "settings": "Paramètres"
+    }
+  },
+  "sidebar": {
+    "general": "Général",
+    "dashboard": "Tableau de bord",
+    "tenants": "Clients",
+    "billings": "Facturation",
+    "migrations": "Migrations",
+    "backups": "Sauvegardes",
+    "storage": "Stockage",
+    "support": "Assistance",
+    "metrics": "Statistiques",
+    "admins": "Administrateurs"
+  }
+}
