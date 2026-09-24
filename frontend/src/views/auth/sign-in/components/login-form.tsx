@@ -14,7 +14,7 @@ import {
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { PasswordInput } from '@/components/password-input'
-import { Link, Loader2, LogIn } from 'lucide-react'
+import { Loader2, LogIn } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
 
@@ -81,7 +81,7 @@ export default function LoginForm({ setPage, setToken }: Props) {
                     name='username'
                     render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Username</FormLabel>
+                            <FormLabel>Nom Utilisateur</FormLabel>
                             <FormControl>
                                 <Input placeholder='your username' {...field} />
                             </FormControl>
@@ -94,17 +94,17 @@ export default function LoginForm({ setPage, setToken }: Props) {
                     name='password'
                     render={({ field }) => (
                         <FormItem className='relative'>
-                            <FormLabel>Password</FormLabel>
+                            <FormLabel>Mot de passe</FormLabel>
                             <FormControl>
                                 <PasswordInput placeholder='********' {...field} />
                             </FormControl>
                             <FormMessage />
-                            <Link
+                            {/* <Link
                                 to='/forgot-password'
                                 className='absolute inset-e-0 -top-0.5 text-sm font-medium text-muted-foreground hover:opacity-75'
                             >
                                 Forgot password?
-                            </Link>
+                            </Link> */}
                         </FormItem>
                     )}
                 />

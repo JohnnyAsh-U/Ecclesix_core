@@ -29,7 +29,7 @@ export function SignIn() {
           <CardContent>
             <LoginForm setPage={setPage} setToken={setTempToken} />
           </CardContent>
-          <CardFooter>
+          {/* <CardFooter>
             <p className='text-center text-sm text-muted-foreground'>
               <a
                 href='/terms'
@@ -38,7 +38,7 @@ export function SignIn() {
                 @AshicoreLabs
               </a>{' '}
             </p>
-          </CardFooter>
+          </CardFooter> */}
         </Card>}
 
       {page == '2fa' && <Card className='gap-4'>
@@ -57,12 +57,12 @@ export function SignIn() {
         </CardContent>
         <CardFooter>
           <p className='text-center text-sm text-muted-foreground'>
-            <a
+            {/* <a
               href='/terms'
               className='underline underline-offset-4 hover:text-primary'
-            >
-              @AshicoreLabs
-            </a>{' '}
+            > */}
+              @Ecclesix
+            {' '}
           </p>
         </CardFooter>
       </Card>}

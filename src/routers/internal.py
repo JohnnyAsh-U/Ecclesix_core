@@ -1,7 +1,6 @@
 """
 Main internal router aggregator.
 Combines all sub-routers for Django API endpoints:
-- Metrics (infrastructure monitoring via Prometheus)
 - Migrations (tenant database migrations)
 - Tenants (tenant management)
 - Billing (billing records)

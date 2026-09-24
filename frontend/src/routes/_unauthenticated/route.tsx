@@ -4,7 +4,7 @@ import { Outlet } from '@tanstack/react-router'
 
 const requireGuest = () => {
   const { isAuthenticated } = useAuthStore.getState();
-  if (isAuthenticated) throw redirect({ to: '/dashboard' });
+  if (isAuthenticated) throw redirect({ to: '/tenants' });
 };
 
 export const Route = createFileRoute('/_unauthenticated')({

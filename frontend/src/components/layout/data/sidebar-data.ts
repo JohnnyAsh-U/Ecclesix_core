@@ -1,11 +1,11 @@
 import {
-  LayoutDashboard,
+  // LayoutDashboard,
   Building2,
   CreditCard,
   HardDrive,
   Database,
-  Mail,
-  BarChart3,
+  // Mail,
+  // BarChart3,
   Shield,
   DatabaseIcon,
 } from 'lucide-react'
@@ -23,11 +23,11 @@ export const sidebarData = (): SidebarData => {
       {
         title: 'Général',
         items: [
-          {
-            title: 'Tableau de bord',
-            url: '/dashboard',
-            icon: LayoutDashboard,
-          },
+          // {
+          //   title: 'Tableau de bord',
+          //   url: '/dashboard',
+          //   icon: LayoutDashboard,
+          // },
           {
             title: 'Clients',
             url: '/tenants',
@@ -53,16 +53,16 @@ export const sidebarData = (): SidebarData => {
             url: '/storage',
             icon: Database,
           },
-          {
-            title: 'Assistance',
-            url: '/support',
-            icon: Mail,
-          },
-          {
-            title: 'Statistiques',
-            url: '/metrics',
-            icon: BarChart3,
-          },
+          // {
+          //   title: 'Assistance',
+          //   url: '/support',
+          //   icon: Mail,
+          // },
+          // {
+          //   title: 'Statistiques',
+          //   url: '/metrics',
+          //   icon: BarChart3,
+          // },
           {
             title: 'Administrateurs',
             url: '/admins',

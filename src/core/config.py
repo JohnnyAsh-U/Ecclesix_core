@@ -5,6 +5,7 @@ load_dotenv()
 
 
 class Settings(BaseModel):
+  PORT: int
   DATABASE_URL: str
   REDIS_URL: str
   ACCESS_SECRET_KEY: str
@@ -26,9 +27,6 @@ class Settings(BaseModel):
   DJANGO_RETRY_MAX_ATTEMPTS: int = 3
   DJANGO_RETRY_DELAY: float = 1.0  # seconds
   
-  
-  # Prometheus url
-  PROMETHEUS_URL : str = "http://localhost:9090"
   
   # OBJECT STORAGE
   S3_ENDPOINT_URL: str 
@@ -55,6 +53,7 @@ class Settings(BaseModel):
 
 def get_settings() -> Settings:
     return Settings(
+        PORT=os.getenv("PORT", "8080"),
         DATABASE_URL=os.getenv("DATABASE_URL", "sqlite:///./test.db"),
         ACCESS_SECRET_KEY=os.getenv("ACCESS_SECRET_KEY", "your-access-secret-key"),
         REFRESH_SECRET_KEY=os.getenv("REFRESH_SECRET_KEY", "your-refresh-secret-key"),
@@ -68,7 +67,6 @@ def get_settings() -> Settings:
         DJANGO_REQUEST_TIMEOUT=int(os.getenv("DJANGO_REQUEST_TIMEOUT", "10")),
         DJANGO_RETRY_MAX_ATTEMPTS=int(os.getenv("DJANGO_RETRY_MAX_ATTEMPTS", "3")),
         DJANGO_RETRY_DELAY=float(os.getenv("DJANGO_RETRY_DELAY", "1.0")),
-        PROMETHEUS_URL=os.getenv("PROMETHEUS_URL", "http://localhost:9090"),
         S3_ENDPOINT_URL=os.getenv("S3_ENDPOINT_URL", "http://localhost:9000"),
         S3_ACCESS_KEY=os.getenv("S3_ACCESS_KEY", "your-s3-access-key"),
         S3_SECRET_KEY=os.getenv("S3_SECRET_KEY", "your-s3-secret-key"),

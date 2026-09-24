@@ -19,7 +19,6 @@ from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
-from prometheus_fastapi_instrumentator import Instrumentator
 import logging
 from uuid import uuid4
 
@@ -162,15 +161,6 @@ app = FastAPI(
     redoc_url=None if settings.PROD else "/redoc",
     openapi_url=None if settings.PROD else "/openapi.json"
 )
-Instrumentator(
-    should_group_status_codes=True,
-    should_ignore_untemplated=True,
-    # should_respect_env_var=True,
-    excluded_handlers=["/metrics", "/health"],  
-).instrument(app).expose(app)
-
-
-
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
@@ -203,3 +193,8 @@ async def global_exception_handler(request: Request, exc: Exception):
 @app.get("/health", response_model=List[str])
 async def read_items():
     return ["item1", "item2", "item3"]
+
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run("main:app", host="localhost", port=settings.PORT, reload= not settings.PROD)

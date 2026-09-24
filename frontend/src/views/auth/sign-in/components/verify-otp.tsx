@@ -1,6 +1,6 @@
 import React from 'react'
 
-import { useEffect, useState } from 'react'
+// import { useEffect, useState } from 'react'
 import { z } from 'zod'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -42,7 +42,7 @@ export function Verify2FAForm({
 }: Verify2FAFormProps) {
   const navigate = useNavigate()
   const verify2FAMutation = useVerify2FAMutation()
-  const [timer, setTimer] = useState(300) // 5 minutes
+  // const [timer, setTimer] = useState(300) // 5 minutes
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -51,21 +51,21 @@ export function Verify2FAForm({
     },
   })
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setTimer((prev) => {
-        if (prev <= 1) {
-          clearInterval(interval)
-          toast.error('Session expirée, veuillez vous reconnecter')
-          navigate({ to: '/login', replace: true })
-          return 0
-        }
-        return prev - 1
-      })
-    }, 2000)
+  // useEffect(() => {
+  //   const interval = setInterval(() => {
+  //     setTimer((prev) => {
+  //       if (prev <= 1) {
+  //         clearInterval(interval)
+  //         toast.error('Session expirée, veuillez vous reconnecter')
+  //         navigate({ to: '/login', replace: true })
+  //         return 0
+  //       }
+  //       return prev - 1
+  //     })
+  //   }, 2000)
 
-    return () => clearInterval(interval)
-  }, [])
+  //   return () => clearInterval(interval)
+  // }, [])
 
   async function onSubmit(data: z.infer<typeof formSchema>) {
     try {
@@ -86,8 +86,8 @@ export function Verify2FAForm({
     }
   }
 
-  const minutes = Math.floor(timer / 60)
-  const seconds = timer % 60
+  // const minutes = Math.floor(timer / 60)
+  // const seconds = timer % 60
 
   return (
     <Form {...form}>
@@ -123,9 +123,9 @@ export function Verify2FAForm({
           )}
         />
 
-        <div className='text-center text-sm text-muted-foreground'>
+        {/* <div className='text-center text-sm text-muted-foreground'>
           Code expire dans {minutes}:{seconds.toString().padStart(2, '0')}
-        </div>
+        </div> */}
 
         <Button disabled={verify2FAMutation.isPending}>
           {verify2FAMutation.isPending && (
